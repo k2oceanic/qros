@@ -4,26 +4,59 @@
 
 QROS_NS_HEAD
 
-template <typename msg_T>
-class QRosPublisher : public QRosObject{
-
+class QRosPublisherInterface{
 public:
-
-protected:
-    msg_T msg_buffer_;
-    void setTopicBase(QString topic);
-    virtual void publishBase(){
-      ros_pub_->publish(msg_buffer_);
-    }
-
-private:
-    typename rclcpp::Publisher<msg_T>::SharedPtr ros_pub_;
+  typedef std::shared_ptr<QRosPublisherInterface> SharedPtr;
+  virtual void setNode(QRosNode* node) = 0;
+  virtual void publish() = 0;
+  virtual void createRosPub(QString topic, int queue_size) = 0;
+  virtual QString getTopic() = 0 ;
 };
 
-template<typename msg_T>
-void QRosPublisher<msg_T>::setTopicBase(QString topic){
-  ros_pub_ = getRosNode()->template create_publisher<msg_T>(topic.toStdString(), 10);
-}
+template <typename msg_T>
+class QRosTypedPublisher: public QRosPublisherInterface{
+public:
+  void setNode(QRosNode* node){
+    ros_node_ptr_ = node->getNodePtr();
+  }
+  void publish(){
+    ros_pub_->publish(msg_buffer_);
+  }
+  void createRosPub(QString topic, int queue_size = 10){
+    ros_pub_ = ros_node_ptr_->template create_publisher<msg_T>(topic.toStdString(), queue_size);
+  }
+  QString getTopic(){
+    return QString::fromStdString(ros_pub_->get_topic_name());
+  }
+  msg_T & msgBuffer(){return msg_buffer_;}
+  const msg_T getConstBuffer(){return msg_buffer_;}
+  msg_T msg_buffer_;
+private:
+  rclcpp::Node::SharedPtr ros_node_ptr_;
+  typename rclcpp::Publisher<msg_T>::SharedPtr ros_pub_;
+};
+
+class QRosPublisher : public QRosObject{
+  Q_OBJECT
+public:
+  Q_PROPERTY(QString topic READ getTopic WRITE setTopic NOTIFY topicChanged)
+public slots:
+  void setTopic(QString topic){
+    interfacePtr()->setNode(getNode());
+    interfacePtr()->createRosPub(topic,1);
+    emit topicChanged();
+  }
+  QString getTopic(){
+    return interfacePtr()->getTopic();
+  }
+  void publish(){
+    interfacePtr()->publish();
+  }
+signals:
+  void topicChanged();
+protected:
+  virtual QRosPublisherInterface * interfacePtr() = 0;
+};
 
 
 QROS_NS_FOOT
