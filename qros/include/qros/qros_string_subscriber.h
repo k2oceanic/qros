@@ -6,7 +6,7 @@
 
 QROS_NS_HEAD
 
-    class QRosStringSubscriber : public QRosSubscriber<std_msgs::msg::String>{
+class QRosStringSubscriber : public QRosSubscriber<std_msgs::msg::String>{
   Q_OBJECT
 public:
 Q_PROPERTY(QString data READ getData NOTIFY dataChanged)
@@ -28,9 +28,8 @@ protected:
   QString data;
 
 private:
+};
 
-    };
-
-    QROS_NS_FOOT
+QROS_NS_FOOT
 
 

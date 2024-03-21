@@ -20,9 +20,22 @@ ApplicationWindow {
         }
     }
 
+    QRosStringPublisher{
+        id: stringPub
+        node: applicationNode
+        Component.onCompleted:{
+            setTopic("/from_qml")
+        }
+
+    }
+
     Label{
         id: myLabel
         anchors.centerIn: parent
         text: stringSub.data
+        onTextChanged: {
+            stringPub.data = text
+            stringPub.publish(text)
+        }
     }
 }

@@ -4,7 +4,6 @@
 
 QROS_NS_HEAD
 
-
 template <typename msg_T>
 class QRosSubscriber : public QRosObject{
 
