@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>QtQuickControls2.conf</file>
+        <file>qml/Components/NumericalDisplay.qml</file>
+        <file>qml/Components/RangeBar.qml</file>
+        <file>qml/DataDisplays/CardTempDisplay.qml</file>
+        <file>qml/Components/Indicator.qml</file>
+        <file>qml/Components/IndicatorArray.qml</file>
+        <file>qml/Components/SIPrefixDisplay.qml</file>
+        <file>qml/Components/AttitudeIndicator.qml</file>
+        <file>qml/Components/AttitudeTester.qml</file>
+        <file>qml/DataDisplays/CardRelayDisplay.qml</file>
+        <file>qml/DataDisplays/HydraulicPressureDisplay.qml</file>
+        <file>qml/Components/OdysseusSlider.qml</file>
+        <file>qml/ExampleWindow.qml</file>
+    </qresource>
+</RCC>

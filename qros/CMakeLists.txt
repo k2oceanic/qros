@@ -8,15 +8,25 @@ set(ROS_DEPENDS
     ament_cmake
     rclcpp
     std_msgs
-    template_pkg_interfaces
+    qros_interfaces
   )
 
 set(EXTERNAL_DEPENDS
-
+    Qt5Widgets
+    Qt5PrintSupport
+    Qt5Qml
+    Qt5Quick
+    Qt5Gui
+    Qt5QuickControls2
   )
 
 set(EXTERNAL_DEPENDS_LIB
-
+    Qt5::Widgets
+    Qt5::PrintSupport
+    Qt5::Core
+    Qt5::Qml
+    Qt5::Quick
+    Qt5::QuickControls2
   )
 
 
@@ -55,14 +65,48 @@ file(GLOB HDRS CONFIGURE_DEPENDS
 file(GLOB SRCS CONFIGURE_DEPENDS
   "src/*.cpp"
   "src/*.hpp"
+  "include/${PROJECT_NAME}/*.cpp"
 )
 file(GLOB NODES CONFIGURE_DEPENDS
   "nodes/*.cpp"
 )
 
-include_directories(
-  include
+###
+### QT stuff (required if you want a GUI)
+###
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)  #This will autogenerate qt gui stuff
+set(CMAKE_AUTORCC ON)  #this needs to be on so cmake will know what to do with QT resource Files
+
+#find all the qt UI stuff
+file(GLOB_RECURSE UI
+    "include/${PROJECT_NAME}/*.ui"
 )
+
+## find all resource files
+file(GLOB QRC
+    "rc/*.qrc"
+)
+
+message("Adding ${PROJECT_NAME} QRC files: "  )
+foreach(source ${QRC})
+    message("  - " ${source})
+endforeach(source)
+
+message("Adding ${PROJECT_NAME} UI files: "  )
+foreach(source ${UI})
+    message("  - " ${source})
+endforeach(source)
+
+#make them into headers
+qt5_wrap_ui (UI_HDRS  ${UI})
+
+message("Generating ${PROJECT_NAME} UI Headers: " )
+foreach(source ${UI_HDRS})
+    message("  - " ${source})
+endforeach(source)
+
 
 ###########
 ## Build ##
@@ -76,28 +120,21 @@ foreach(NODE_FILE ${NODES})
   get_filename_component(NODE_NAME ${NODE_FILE} NAME_WE)
   message("  - " ${NODE_NAME})
   list(APPEND EXECUTABLES ${NODE_NAME})
-  add_executable(${NODE_NAME} ${NODE_FILE} ${HDRS} ${SRCS})
-  ament_target_dependencies(${NODE_NAME} ${ROS_DEPENDS} ${EXTERNAL_DEPENDS_LIB})
+  add_executable(${NODE_NAME} ${NODE_FILE} ${HDRS} ${SRCS} ${UI} ${QRC})
+  ament_target_dependencies(${NODE_NAME} ${ROS_DEPENDS} )
+  target_link_libraries(${NODE_NAME} ${EXTERNAL_DEPENDS_LIB})
   target_include_directories(${NODE_NAME} PRIVATE "include/${PROJECT_NAME}/")
 endforeach(NODE_FILE)
 
 
 message("  Installing: " ${EXECUTABLES})
+foreach(EXECUTABLE ${EXECUTABLES})
+    message("  - " ${EXECUTABLE})
+endforeach(EXECUTABLE)
+
 install(TARGETS
   ${EXECUTABLES}
   DESTINATION lib/${PROJECT_NAME}/
-)
-install(PROGRAMS
-  scripts/replay_pcap.sh
-  DESTINATION lib/${PROJECT_NAME}
-)
-install(DIRECTORY
-  launch
-  DESTINATION share/${PROJECT_NAME}/
-)
-install(DIRECTORY
-  config
-  DESTINATION share/${PROJECT_NAME}/
 )
 
 #############
