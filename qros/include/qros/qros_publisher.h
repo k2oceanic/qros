@@ -1,5 +1,6 @@
 #pragma once
 
+#include "qdebug.h"
 #include "qros_object.h"
 
 QROS_NS_HEAD
@@ -20,7 +21,8 @@ public:
     ros_node_ptr_ = node->getNodePtr();
   }
   void publish(){
-    ros_pub_->publish(msg_buffer_);
+    if(ros_pub_)
+      ros_pub_->publish(msg_buffer_);
   }
   void createRosPub(QString topic, int queue_size = 10){
     ros_pub_ = ros_node_ptr_->template create_publisher<msg_T>(topic.toStdString(), queue_size);
@@ -42,12 +44,17 @@ public:
   Q_PROPERTY(QString topic READ getTopic WRITE setTopic NOTIFY topicChanged)
 public slots:
   void setTopic(QString topic){
-    interfacePtr()->setNode(getNode());
-    interfacePtr()->createRosPub(topic,1);
-    emit topicChanged();
+    try{
+      topic_ = topic;
+      interfacePtr()->setNode(getNode());
+      interfacePtr()->createRosPub(topic_,1);
+      emit topicChanged();
+    }catch(...){
+      qWarning() << "invalid topic name: " << topic;
+    }
   }
   QString getTopic(){
-    return interfacePtr()->getTopic();
+    return topic_;
   }
   void publish(){
     interfacePtr()->publish();
@@ -56,6 +63,7 @@ signals:
   void topicChanged();
 protected:
   virtual QRosPublisherInterface * interfacePtr() = 0;
+  QString topic_;
 };
 
 
