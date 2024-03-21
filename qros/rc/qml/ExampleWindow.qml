@@ -16,16 +16,16 @@ ApplicationWindow {
         id: stringSub
         node: applicationNode
         Component.onCompleted:{
-            subscribe("/topic")
+            topic="/topic"
         }
     }
 
     QRosStringPublisher{
         id: stringPub
         node: applicationNode
-        Component.onCompleted:{
-            setTopic("/from_qml")
-        }
+        // Component.onCompleted:{
+        //     topic="/from_qml"
+        // }
 
     }
 
@@ -36,6 +36,14 @@ ApplicationWindow {
         onTextChanged: {
             stringPub.data = text
             stringPub.publish(text)
+        }
+    }
+
+    TextField{
+        id: textField
+        text: "/from_qml"
+        onTextChanged: {
+            stringPub.setTopic(textField.text)
         }
     }
 }

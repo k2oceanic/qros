@@ -6,32 +6,26 @@
 
 QROS_NS_HEAD
 
-class QRosStringPublisher : public QRosPublisher<std_msgs::msg::String>{
+
+
+class QRosStringPublisher : public QRosPublisher{
   Q_OBJECT
 public:
 Q_PROPERTY(QString data READ getData WRITE setData NOTIFY dataChanged)
-
 public slots:
-  void setTopic(QString topic){setTopicBase(topic);}
-  void publish(){
-    publishBase();
-  }
-
   QString getData() const{
-    return QString::fromStdString(msg_buffer_.data);
+    return QString::fromStdString(publisher_.msg_buffer_.data);
   }
-
   void setData(QString topic){
-    msg_buffer_.data = topic.toStdString();
+    publisher_.msgBuffer().data = topic.toStdString();
     emit dataChanged();
   }
 signals:
   void dataChanged();
 
 protected:
-  //QString data;
-
-private:
+  QRosPublisherInterface * interfacePtr(){return &publisher_;}
+  QRosTypedPublisher<std_msgs::msg::String> publisher_;
 };
 
 QROS_NS_FOOT
