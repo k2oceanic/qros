@@ -141,54 +141,54 @@ install(TARGETS
 ## library ##
 #############
 
-# include_directories(include/${PROJECT_NAME})
-# add_library(${PROJECT_NAME} ${SRCS} ${HDRS})
-# ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
-# ament_target_dependencies(${PROJECT_NAME} ${ROS_DEPENDS})
-# ament_export_dependencies(${ROS_DEPENDS} ${EXTERNAL_DEPENDS})
-# ament_export_include_directories(include)
+ include_directories(include/${PROJECT_NAME})
+ add_library(${PROJECT_NAME} ${SRCS} ${HDRS})
+ ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ ament_target_dependencies(${PROJECT_NAME} ${ROS_DEPENDS})
+ ament_export_dependencies(${ROS_DEPENDS} ${EXTERNAL_DEPENDS})
+ ament_export_include_directories(include)
 
-# target_link_libraries(${PROJECT_NAME} ${EXTERNAL_DEPENDS_LIB})
+ target_link_libraries(${PROJECT_NAME} ${EXTERNAL_DEPENDS_LIB})
 
-# install(DIRECTORY include/${PROJECT_NAME}
-#   DESTINATION include
-# )
+ install(DIRECTORY include/${PROJECT_NAME}
+   DESTINATION include
+ )
 
-# install(TARGETS ${PROJECT_NAME}
-#   EXPORT ${PROJECT_NAME}
-#   LIBRARY DESTINATION lib
-#   ARCHIVE DESTINATION lib
-#   RUNTIME DESTINATION bin
-#   INCLUDES DESTINATION include
-# )
+ install(TARGETS ${PROJECT_NAME}
+   EXPORT ${PROJECT_NAME}
+   LIBRARY DESTINATION lib
+   ARCHIVE DESTINATION lib
+   RUNTIME DESTINATION bin
+   INCLUDES DESTINATION include
+ )
 
-ament_python_install_package(${PROJECT_NAME})
+#ament_python_install_package(${PROJECT_NAME})
 
-add_library(qros ${SRCS})
+#add_library(qros ${SRCS})
 
-target_include_directories(qros
-  PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
-)
+#target_include_directories(qros
+#  PUBLIC
+#    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+#    "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+#)
 
-ament_target_dependencies(qros ${ROS_DEPENDS} )
-target_link_libraries(qros ${EXTERNAL_DEPENDS_LIB})
+#ament_target_dependencies(qros ${ROS_DEPENDS} )
+#target_link_libraries(qros ${EXTERNAL_DEPENDS_LIB})
 
-install(
-  DIRECTORY include/
-  DESTINATION include/${PROJECT_NAME}
-)
+#install(
+#  DIRECTORY include/
+#  DESTINATION include/${PROJECT_NAME}
+#)
 
-install(TARGETS qros
-  EXPORT export_${PROJECT_NAME}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
+#install(TARGETS qros
+#  EXPORT export_${PROJECT_NAME}
+#  ARCHIVE DESTINATION lib
+#  LIBRARY DESTINATION lib
+#  RUNTIME DESTINATION bin
+#)
 
-ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-ament_export_dependencies(${ROS_DEPENDS} ${EXTERNAL_DEPENDS_LIB})
+#ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+#ament_export_dependencies(${ROS_DEPENDS} ${EXTERNAL_DEPENDS_LIB})
 
 
 #############
