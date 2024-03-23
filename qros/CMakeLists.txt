@@ -141,55 +141,34 @@ install(TARGETS
 ## library ##
 #############
 
- include_directories(include/${PROJECT_NAME})
- add_library(${PROJECT_NAME} ${SRCS} ${HDRS})
- ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
- ament_target_dependencies(${PROJECT_NAME} ${ROS_DEPENDS})
- ament_export_dependencies(${ROS_DEPENDS} ${EXTERNAL_DEPENDS})
- ament_export_include_directories(include)
+include_directories(include/qros) # to tell CMake to add the directory as -I to the compilation command line
 
- target_link_libraries(${PROJECT_NAME} ${EXTERNAL_DEPENDS_LIB})
+set(HEADER_FILES include/qros/lib_header.hpp) # you can use just the file you're using but this is mostly used for multiple header files
 
- install(DIRECTORY include/${PROJECT_NAME}
-   DESTINATION include
- )
+add_library(my_lib src/lib_source.cpp ${HEADER_FILES}) 
 
- install(TARGETS ${PROJECT_NAME}
-   EXPORT ${PROJECT_NAME}
-   LIBRARY DESTINATION lib
-   ARCHIVE DESTINATION lib
-   RUNTIME DESTINATION bin
-   INCLUDES DESTINATION include
- )
+#target_link_libraries(${NODES} PUBLIC my_lib)
 
-#ament_python_install_package(${PROJECT_NAME})
+#ament_target_dependencies(my_lib ${ROS_DEPENDS})
 
-#add_library(qros ${SRCS})
+# this line to export the targets, in our case it's a library!
+ament_export_targets(my_lib HAS_LIBRARY_TARGET)
 
-#target_include_directories(qros
-#  PUBLIC
-#    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-#    "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
-#)
+# install the include/the_library directory to the install/include/the_library
+install(
+  DIRECTORY include/qros
+  DESTINATION include
+)
 
-#ament_target_dependencies(qros ${ROS_DEPENDS} )
-#target_link_libraries(qros ${EXTERNAL_DEPENDS_LIB})
 
-#install(
-#  DIRECTORY include/
-#  DESTINATION include/${PROJECT_NAME}
-#)
-
-#install(TARGETS qros
-#  EXPORT export_${PROJECT_NAME}
-#  ARCHIVE DESTINATION lib
-#  LIBRARY DESTINATION lib
-#  RUNTIME DESTINATION bin
-#)
-
-#ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-#ament_export_dependencies(${ROS_DEPENDS} ${EXTERNAL_DEPENDS_LIB})
-
+install(
+  TARGETS my_lib
+  EXPORT my_lib
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
 
 #############
 ## testing ##
