@@ -141,34 +141,58 @@ install(TARGETS
 ## library ##
 #############
 
-include_directories(include/qros) # to tell CMake to add the directory as -I to the compilation command line
+add_library(${PROJECT_NAME} SHARED
+    ${HDRS}
 
-set(HEADER_FILES include/qros/lib_header.hpp) # you can use just the file you're using but this is mostly used for multiple header files
+    )
 
-add_library(my_lib src/lib_source.cpp ${HEADER_FILES}) 
+ament_target_dependencies(${PROJECT_NAME}
+    rclcpp
+    std_msgs
 
-#target_link_libraries(${NODES} PUBLIC my_lib)
+    )
 
-#ament_target_dependencies(my_lib ${ROS_DEPENDS})
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
 
-# this line to export the targets, in our case it's a library!
-ament_export_targets(my_lib HAS_LIBRARY_TARGET)
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(
+    rclcpp
+    std_msgs
+    Qt5Widgets
+    Qt5PrintSupport
+    Qt5Qml
+    Qt5Quick
+    Qt5Gui
+    Qt5QuickControls2
 
-# install the include/the_library directory to the install/include/the_library
+    )
+
+target_link_libraries(${PROJECT_NAME}
+    Qt5::Widgets
+    Qt5::PrintSupport
+    Qt5::Core
+    Qt5::Qml
+    Qt5::Quick
+    Qt5::QuickControls2
+
+    )
+
 install(
-  DIRECTORY include/qros
-  DESTINATION include
-)
-
+    DIRECTORY include/
+    DESTINATION include
+    )
 
 install(
-  TARGETS my_lib
-  EXPORT my_lib
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
-)
+    TARGETS ${PROJECT_NAME}
+    EXPORT export_${PROJECT_NAME}
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+    )
 
 #############
 ## testing ##

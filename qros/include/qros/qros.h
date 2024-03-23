@@ -11,6 +11,11 @@ QROS_NS_HEAD
 #define QML_PACKAGE_VERSION_MAJOR 1
 #define QML_PACKAGE_VERSION_MINOR 0
 
+struct QRos
+{
+    int test_int;
+};
+
 void registerQmlTypes();
 
 QROS_NS_FOOT
