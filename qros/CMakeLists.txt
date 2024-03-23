@@ -141,16 +141,9 @@ install(TARGETS
 ## library ##
 #############
 
-add_library(${PROJECT_NAME} SHARED
-    ${HDRS}
+add_library(${PROJECT_NAME} SHARED ${HDRS})
 
-    )
-
-ament_target_dependencies(${PROJECT_NAME}
-    rclcpp
-    std_msgs
-
-    )
+ament_target_dependencies(${PROJECT_NAME} ${ROS_DEPENDS})
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC
@@ -158,27 +151,10 @@ target_include_directories(${PROJECT_NAME}
     $<INSTALL_INTERFACE:include>)
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-ament_export_dependencies(
-    rclcpp
-    std_msgs
-    Qt5Widgets
-    Qt5PrintSupport
-    Qt5Qml
-    Qt5Quick
-    Qt5Gui
-    Qt5QuickControls2
 
-    )
+ament_export_dependencies(${ROS_DEPENDS} ${EXTERNAL_DEPENDS})
 
-target_link_libraries(${PROJECT_NAME}
-    Qt5::Widgets
-    Qt5::PrintSupport
-    Qt5::Core
-    Qt5::Qml
-    Qt5::Quick
-    Qt5::QuickControls2
-
-    )
+target_link_libraries(${PROJECT_NAME} ${EXTERNAL_DEPENDS_LIB})
 
 install(
     DIRECTORY include/
