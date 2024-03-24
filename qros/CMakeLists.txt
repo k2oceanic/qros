@@ -147,8 +147,9 @@ ament_target_dependencies(${PROJECT_NAME} ${ROS_DEPENDS})
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+    )
 
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 
@@ -158,7 +159,7 @@ target_link_libraries(${PROJECT_NAME} ${EXTERNAL_DEPENDS_LIB})
 
 install(
     DIRECTORY include/
-    DESTINATION include
+    DESTINATION include/${PROJECT_NAME}
     )
 
 install(
