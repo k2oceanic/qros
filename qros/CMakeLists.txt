@@ -141,35 +141,26 @@ install(TARGETS
 ## library ##
 #############
 
-add_library(${PROJECT_NAME} SHARED ${HDRS})
-
+include_directories(include/${PROJECT_NAME})
+add_library(${PROJECT_NAME} ${SRCS} ${HDRS})
+ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_target_dependencies(${PROJECT_NAME} ${ROS_DEPENDS})
-
-target_include_directories(${PROJECT_NAME}
-    PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
-    )
-
-ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-
 ament_export_dependencies(${ROS_DEPENDS} ${EXTERNAL_DEPENDS})
+ament_export_include_directories(include)
 
 target_link_libraries(${PROJECT_NAME} ${EXTERNAL_DEPENDS_LIB})
 
-install(
-    DIRECTORY include/
-    DESTINATION include/${PROJECT_NAME}
-    )
+install(DIRECTORY include/${PROJECT_NAME}
+  DESTINATION include
+)
 
-install(
-    TARGETS ${PROJECT_NAME}
-    EXPORT export_${PROJECT_NAME}
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin
-    INCLUDES DESTINATION include
-    )
+install(TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
 
 #############
 ## testing ##
