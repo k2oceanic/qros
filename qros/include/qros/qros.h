@@ -11,11 +11,15 @@ QROS_NS_HEAD
 #define QML_PACKAGE_VERSION_MAJOR 1
 #define QML_PACKAGE_VERSION_MINOR 0
 
-struct QRos
-{
-    int test_int;
-};
+void registerQmlTypes(){
+  qmlRegisterType<QRosNode> (QML_PACKAGE, QML_PACKAGE_VERSION_MAJOR,QML_PACKAGE_VERSION_MINOR,"QRosNode");
+  qRegisterMetaType<QRosNode*>("const QRosNode*");
 
-void registerQmlTypes();
+  qmlRegisterType<QRosStringSubscriber> (QML_PACKAGE, QML_PACKAGE_VERSION_MAJOR,QML_PACKAGE_VERSION_MINOR,"QRosStringSubscriber");
+  qRegisterMetaType<QRosStringSubscriber*>("const QRosStringSubscriber*");
+
+  qmlRegisterType<QRosStringPublisher> (QML_PACKAGE, QML_PACKAGE_VERSION_MAJOR,QML_PACKAGE_VERSION_MINOR,"QRosStringPublisher");
+  qRegisterMetaType<QRosStringPublisher*>("const QRosStringPublisher*");
+}
 
 QROS_NS_FOOT
