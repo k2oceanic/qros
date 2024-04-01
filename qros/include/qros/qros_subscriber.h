@@ -5,6 +5,21 @@
 
 QROS_NS_HEAD
 
+class QRosMesssage: public QRosObject{
+public:
+  Q_OBJECT
+  void updateMsg(){emit msgChanged();}
+  signals:
+  void msgChanged();
+};
+
+template <typename msg_T>
+class QRosTypedMessage: public QRosMesssage{
+public:
+  msg_T & raw(){return ros_msg_;}
+private:
+  msg_T ros_msg_;
+};
 
 class QRosSubscriberInterface{
 public:
@@ -32,12 +47,12 @@ public:
   QString getTopic(){
     return QString::fromStdString(ros_sub_->get_topic_name());
   }
-  msg_T & msgBuffer(){return msg_buffer_;}
+  msg_T & msgBuffer(){return msg_buffer_.raw();}
   void setCallback(std::function<void()> callback){
     callback_=callback;
   }
 private:
-  msg_T msg_buffer_;
+  QRosTypedMessage<msg_T> msg_buffer_;
   void rosCallback(const typename msg_T::SharedPtr msg);
   rclcpp::Node::SharedPtr ros_node_ptr_;
   typename rclcpp::Subscription<msg_T>::SharedPtr ros_sub_;
@@ -46,7 +61,8 @@ private:
 
 template<typename msg_T>
 void QRosTypedSubscriber<msg_T>::rosCallback(const typename msg_T::SharedPtr msg){
-  msg_buffer_ = *msg;
+  msg_buffer_.raw() = *msg;
+  msg_buffer_.updateMsg();
   callback_();
 }
 
