@@ -10,7 +10,7 @@ class QRosValvePublisher : public QRosPublisher{
   Q_OBJECT
 public:
   Q_PROPERTY(int valveId READ getValveId WRITE setValveId NOTIFY valveIdChanged)
-  Q_PROPERTY(double proportionalValue READ getProportionalValue WRITE setProportionalValue NOTIFY proportionalValueChanged)
+  Q_PROPERTY(double setPoint READ getSetPoint WRITE setSetPoint NOTIFY setPointChanged)
 
 public slots:
   int getValveId() const {
@@ -21,17 +21,17 @@ public slots:
     emit valveIdChanged();
   }
 
-  double getProportionalValue() const {
-    return publisher_.msg_buffer_.proportional_value;
+  double getSetPoint() const {
+    return publisher_.msg_buffer_.set_point;
   }
-  void setProportionalValue(double value) {
-    publisher_.msg_buffer_.proportional_value = value;
-    emit proportionalValueChanged();
+  void setSetPoint(double value) {
+    publisher_.msg_buffer_.set_point = value;
+    emit setPointChanged();
   }
 
 signals:
   void valveIdChanged();
-  void proportionalValueChanged();
+  void setPointChanged();
 
 protected:
   QRosPublisherInterface * interfacePtr() { return &publisher_; }
