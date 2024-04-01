@@ -6,20 +6,19 @@
 
 QROS_NS_HEAD
 
+class QRosString : public QRosTypedMessage <std_msgs::msg::String>{
+  Q_OBJECT
+public:
+  Q_PROPERTY(QString data READ getData NOTIFY dataChanged)
+public slots:
+  QString getData() {return QString::fromStdString(raw().data);}
+signals:
+  void dataChanged();
+};
+
 class QRosStringSubscriber : public QRosSubscriber{
   Q_OBJECT
 public:
-Q_PROPERTY(QString data READ getData NOTIFY dataChanged)
-public slots:
-  QString getData() {return QString::fromStdString(subscriber_.msgBuffer().data);}
-
-signals:
-  void dataChanged();
-
-protected:
-  void onMsgReceived() override{
-    emit dataChanged();
-  }
 
 private:
   QRosSubscriberInterface* interfacePtr(){return &subscriber_;}

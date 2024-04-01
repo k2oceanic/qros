@@ -6,8 +6,8 @@
 QROS_NS_HEAD
 
 class QRosMesssage: public QRosObject{
-public:
   Q_OBJECT
+public:
   void updateMsg(){emit msgChanged();}
   signals:
   void msgChanged();
