@@ -11,7 +11,7 @@ class QRosStringSubscriber : public QRosSubscriber{
 public:
 Q_PROPERTY(QString data READ getData NOTIFY dataChanged)
 public slots:
-  QString getData() const{return QString::fromStdString(subscriber_.msg_buffer_.data);}
+  QString getData() {return QString::fromStdString(subscriber_.msgBuffer().data);}
 
 signals:
   void dataChanged();

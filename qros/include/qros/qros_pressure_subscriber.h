@@ -13,12 +13,12 @@ public:
   Q_PROPERTY(double variance READ getVariance NOTIFY varianceChanged)
 
 public slots:
-  double getPressure() const {
-    return subscriber_.msg_buffer_.fluid_pressure;
+  double getPressure() {
+    return subscriber_.msgBuffer().fluid_pressure;
   }
 
-  double getVariance() const {
-    return subscriber_.msg_buffer_.variance;
+  double getVariance()  {
+    return subscriber_.msgBuffer().variance;
   }
 
 signals:

@@ -32,8 +32,8 @@ public:
   }
   msg_T & msgBuffer(){return msg_buffer_;}
   const msg_T getConstBuffer(){return msg_buffer_;}
-  msg_T msg_buffer_;
 private:
+  msg_T msg_buffer_;
   rclcpp::Node::SharedPtr ros_node_ptr_;
   typename rclcpp::Publisher<msg_T>::SharedPtr ros_pub_;
 };

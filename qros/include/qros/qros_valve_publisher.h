@@ -13,19 +13,19 @@ public:
   Q_PROPERTY(double setPoint READ getSetPoint WRITE setSetPoint NOTIFY setPointChanged)
 
 public slots:
-  int getValveId() const {
-    return publisher_.msg_buffer_.valve_id;
+  int getValveId() {
+    return publisher_.msgBuffer().valve_id;
   }
   void setValveId(int id) {
-    publisher_.msg_buffer_.valve_id = id;
+    publisher_.msgBuffer().valve_id = id;
     emit valveIdChanged();
   }
 
-  double getSetPoint() const {
-    return publisher_.msg_buffer_.set_point;
+  double getSetPoint(){
+    return publisher_.msgBuffer().set_point;
   }
   void setSetPoint(double value) {
-    publisher_.msg_buffer_.set_point = value;
+    publisher_.msgBuffer().set_point = value;
     emit setPointChanged();
   }
 

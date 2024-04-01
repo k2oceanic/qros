@@ -13,12 +13,12 @@ public:
   Q_PROPERTY(double variance READ getVariance NOTIFY varianceChanged)
 
 public slots:
-  double getTemperature() const {
-    return subscriber_.msg_buffer_.temperature;
+  double getTemperature() {
+    return subscriber_.msgBuffer().temperature;
   }
 
-  double getVariance() const {
-    return subscriber_.msg_buffer_.variance;
+  double getVariance() {
+    return subscriber_.msgBuffer().variance;
   }
 
 signals:

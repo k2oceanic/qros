@@ -32,11 +32,12 @@ public:
   QString getTopic(){
     return QString::fromStdString(ros_sub_->get_topic_name());
   }
-  msg_T msg_buffer_;
+  msg_T & msgBuffer(){return msg_buffer_;}
   void setCallback(std::function<void()> callback){
     callback_=callback;
   }
 private:
+  msg_T msg_buffer_;
   void rosCallback(const typename msg_T::SharedPtr msg);
   rclcpp::Node::SharedPtr ros_node_ptr_;
   typename rclcpp::Subscription<msg_T>::SharedPtr ros_sub_;

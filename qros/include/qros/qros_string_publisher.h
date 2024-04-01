@@ -13,8 +13,8 @@ class QRosStringPublisher : public QRosPublisher{
 public:
 Q_PROPERTY(QString data READ getData WRITE setData NOTIFY dataChanged)
 public slots:
-  QString getData() const{
-    return QString::fromStdString(publisher_.msg_buffer_.data);
+  QString getData(){
+    return QString::fromStdString(publisher_.msgBuffer().data);
   }
   void setData(QString topic){
     publisher_.msgBuffer().data = topic.toStdString();

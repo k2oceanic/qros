@@ -17,25 +17,25 @@ public:
   Q_PROPERTY(QVariantMap values READ getValues NOTIFY valuesChanged)
 
 public slots:
-  quint8 getLevel() const {
-    return subscriber_.msg_buffer_.level;
+  quint8 getLevel()  {
+    return subscriber_.msgBuffer().level;
   }
 
-  QString getName() const {
-    return QString::fromStdString(subscriber_.msg_buffer_.name);
+  QString getName()  {
+    return QString::fromStdString(subscriber_.msgBuffer().name);
   }
 
-  QString getMessage() const {
-    return QString::fromStdString(subscriber_.msg_buffer_.message);
+  QString getMessage()  {
+    return QString::fromStdString(subscriber_.msgBuffer().message);
   }
 
-  QString getHardwareId() const {
-    return QString::fromStdString(subscriber_.msg_buffer_.hardware_id);
+  QString getHardwareId()  {
+    return QString::fromStdString(subscriber_.msgBuffer().hardware_id);
   }
 
-  QVariantMap getValues() const {
+  QVariantMap getValues()  {
     QVariantMap valuesMap;
-    for (const auto& kv : subscriber_.msg_buffer_.values) {
+    for (const auto& kv : subscriber_.msgBuffer().values) {
       valuesMap[QString::fromStdString(kv.key)] = QString::fromStdString(kv.value);
     }
     return valuesMap;

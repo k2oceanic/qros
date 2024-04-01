@@ -13,9 +13,9 @@ public:
   Q_PROPERTY(QVariantList status READ getStatus NOTIFY statusChanged)
 
 public slots:
-  QVariantList getStatus() const {
+  QVariantList getStatus() {
     QVariantList statusList;
-    for (const auto& status : subscriber_.msg_buffer_.status) {
+    for (auto& status : subscriber_.msgBuffer().status) {
       QVariantMap statusMap;
       statusMap["level"] = status.level;
       statusMap["name"] = QString::fromStdString(status.name);
