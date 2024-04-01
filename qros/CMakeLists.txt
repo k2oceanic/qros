@@ -8,7 +8,10 @@ set(ROS_DEPENDS
     ament_cmake
     rclcpp
     std_msgs
+    sensor_msgs
+    diagnostic_msgs
     qros_interfaces
+    hydraulic_interfaces
   )
 
 set(EXTERNAL_DEPENDS
