@@ -16,8 +16,7 @@ class QRosHeader : public QRosMessageType<std_msgs::msg::Header> {
   Q_PROPERTY(QString frameId READ getFrameId WRITE setFrameId NOTIFY frameIdChanged)
 
 public:
-  explicit QRosHeader(QObject *parent = nullptr) : QRosMessageType<std_msgs::msg::Header>(parent) {}
-
+  using QRosMessageType<std_msgs::msg::Header>::QRosMessageType;
   QDateTime getStamp() const {
     uint32_t sec = ros_msg_->stamp.sec;
     uint32_t nsec = ros_msg_->stamp.nanosec;
@@ -49,24 +48,22 @@ signals:
 class QRosHeaderPublisher : public QRosPublisher{
   Q_OBJECT
 public:
-  Q_PROPERTY(QRosHeader message READ getMessage WRITE setMessage NOTIFY messageChanged)
-  QRosHeaderPublisher(){
-    publisher_.setMesageBuffer(new QRosHeader(this));
-  }
+  Q_PROPERTY(QRosHeader * message READ getMessage WRITE setMessage NOTIFY messageChanged)
 public slots:
-  QString getMessage(){
-    return publisher_.get;
+  QRosHeader * getMessage(){
+    return msg_;
   }
-  void setData(QString topic){
-    publisher_.msgBuffer().data = topic.toStdString();
-    emit dataChanged();
+  void setMessage(QRosHeader * msg){
+    publisher_.setMsgBuffer(msg);
+    emit messageChanged();
   }
 signals:
-  void dataChanged();
+  void messageChanged();
 
 protected:
   QRosPublisherInterface * interfacePtr(){return &publisher_;}
-  QRosTypedPublisher<std_msgs::msg::Header> publisher_;
+  QRosTypedPublisher<QRosHeader> publisher_;
+  QRosHeader * msg_;
 };
 
 QROS_NS_FOOT

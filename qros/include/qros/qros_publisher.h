@@ -1,7 +1,6 @@
 #pragma once
 
 #include "qdebug.h"
-#include "qros_message.h"
 #include "qros_object.h"
 
 QROS_NS_HEAD
@@ -18,9 +17,6 @@ public:
 template <typename msg_T>
 class QRosTypedPublisher: public QRosPublisherInterface{
 public:
-  void setMesageBuffer(QRosMessageType<msg_T> * msg_buffer){
-    msg_buffer_ = msg_buffer;
-  }
   void setNode(QRosNode* node){
     ros_node_ptr_ = node->getNodePtr();
   }
@@ -35,10 +31,10 @@ public:
     return QString::fromStdString(ros_pub_->get_topic_name());
   }
   msg_T & msgBuffer(){return msg_buffer_;}
+  msg_T * msgPtr(){return &msg_buffer_;}
   const msg_T getConstBuffer(){return msg_buffer_;}
 private:
-  QRosMessageType<msg_T> * msg_buffer_;
-  // QRosMessageType<msg_T> qros_msg_buffer_;
+  msg_T msg_buffer_;
   rclcpp::Node::SharedPtr ros_node_ptr_;
   typename rclcpp::Publisher<msg_T>::SharedPtr ros_pub_;
 };

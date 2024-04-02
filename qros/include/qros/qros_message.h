@@ -19,9 +19,13 @@ signals:
 template<typename msg_T>
 class QRosMessageType : public QRosMessage {
 public:
-  explicit QRosMessageType(QObject *parent = nullptr) : QRosMessage(parent) {}
-  virtual QString messageType() const {rosidl_generator_traits::data_type<msg_T>();}
-  msg_T * rosMessage(){return ros_msg_;}
+  explicit QRosMessageType(msg_T * ros_msg){
+    setRosMessagePtr(ros_msg);
+  }
+  virtual QString messageType() const override {
+    return QString::fromStdString(rosidl_generator_traits::data_type<msg_T>());
+  }
+  msg_T & rosMessage(){return *ros_msg_;}
   virtual void setRosMessagePtr(msg_T * ros_msg){
     ros_msg_ = ros_msg;
     emit dataChanged();
