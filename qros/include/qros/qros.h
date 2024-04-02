@@ -40,6 +40,15 @@ void registerQmlTypes(){
 
   qmlRegisterType<QRosDiagnosticArraySubscriber> (QML_PACKAGE, QML_PACKAGE_VERSION_MAJOR,QML_PACKAGE_VERSION_MINOR,"QRosDiagnosticArraySubscriber");
   qRegisterMetaType<QRosDiagnosticArraySubscriber*>("const QRosDiagnosticArraySubscriber*");
+
+  qmlRegisterType<QRosDiagnosticArraySubscriber> (QML_PACKAGE, QML_PACKAGE_VERSION_MAJOR,QML_PACKAGE_VERSION_MINOR,"QRosDiagnosticArraySubscriber");
+  qRegisterMetaType<QRosDiagnosticArraySubscriber*>("const QRosDiagnosticArraySubscriber*");
+
+  qmlRegisterType<QRosDiagnosticArraySubscriber> (QML_PACKAGE, QML_PACKAGE_VERSION_MAJOR,QML_PACKAGE_VERSION_MINOR,"QRosHeader");
+  qRegisterMetaType<QRosDiagnosticArraySubscriber*>("const QRosHeader*");
+
+  qmlRegisterType<QRosDiagnosticArraySubscriber> (QML_PACKAGE, QML_PACKAGE_VERSION_MAJOR,QML_PACKAGE_VERSION_MINOR,"QRosHeaderPublisher");
+  qRegisterMetaType<QRosDiagnosticArraySubscriber*>("const QRosHeaderPublisher*");
 }
 
 QROS_NS_FOOT

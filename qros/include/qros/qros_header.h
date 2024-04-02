@@ -50,11 +50,15 @@ class QRosHeaderPublisher : public QRosPublisher{
 public:
   Q_PROPERTY(QRosHeader * message READ getMessage WRITE setMessage NOTIFY messageChanged)
 public slots:
+  QRosHeaderPublisher(){
+    auto ptr = publisher_.msgPtr();
+    msg_ = new QRosHeader(ptr);
+  }
   QRosHeader * getMessage(){
     return msg_;
   }
   void setMessage(QRosHeader * msg){
-    publisher_.setMsgBuffer(msg);
+    publisher_.msgBuffer() = msg->rosMessage();
     emit messageChanged();
   }
 signals:
@@ -62,7 +66,7 @@ signals:
 
 protected:
   QRosPublisherInterface * interfacePtr(){return &publisher_;}
-  QRosTypedPublisher<QRosHeader> publisher_;
+  QRosTypedPublisher<std_msgs::msg::Header> publisher_;
   QRosHeader * msg_;
 };
 
