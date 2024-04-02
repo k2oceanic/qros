@@ -3,6 +3,7 @@
 #include "qros_object.h"
 #include <QDebug>
 
+#include "qros_message.h"
 QROS_NS_HEAD
 
 
@@ -22,9 +23,6 @@ public:
   void setNode(QRosNode* node){
     ros_node_ptr_ = node->getNodePtr();
   }
-  // void publish(){
-  //   ros_pub_->publish(msg_buffer_);
-  // }
   void subscribe(QString topic, int queue_size = 1){
     ros_sub_ = ros_node_ptr_->template create_subscription<msg_T>(
         topic.toStdString(), queue_size, std::bind(&QRosTypedSubscriber::rosCallback, this, std::placeholders::_1));
