@@ -10,7 +10,7 @@ public:
   typedef std::shared_ptr<QRosPublisherInterface> SharedPtr;
   virtual void setNode(QRosNode* node) = 0;
   virtual void publish() = 0;
-  virtual void createRosPub(QString topic, int queue_size) = 0;
+  virtual void createRosPub(QString topic, int queue_size, bool latched) = 0;
   virtual QString getTopic() = 0 ;
 };
 
@@ -24,8 +24,9 @@ public:
     if(ros_pub_)
       ros_pub_->publish(msg_buffer_);
   }
-  void createRosPub(QString topic, int queue_size = 10){
-    ros_pub_ = ros_node_ptr_->template create_publisher<msg_T>(topic.toStdString(), queue_size);
+  void createRosPub(QString topic, int queue_size = 10, bool latched = false) {
+    auto qos = latched ? rclcpp::QoS(rclcpp::KeepLast(queue_size)).transient_local() : rclcpp::QoS(queue_size);
+    ros_pub_ = ros_node_ptr_->template create_publisher<msg_T>(topic.toStdString(), qos);
   }
   QString getTopic(){
     return QString::fromStdString(ros_pub_->get_topic_name());
@@ -43,11 +44,11 @@ class QRosPublisher : public QRosObject{
 public:
   Q_PROPERTY(QString topic READ getTopic WRITE setTopic NOTIFY topicChanged)
 public slots:
-  void setTopic(QString topic){
+  void setTopic(QString topic, int queue_size = 10, bool latched = false){
     try{
       topic_ = topic;
       interfacePtr()->setNode(getNode());
-      interfacePtr()->createRosPub(topic_,1);
+      interfacePtr()->createRosPub(topic_, queue_size, latched); 
       emit topicChanged();
     }catch(...){
       qWarning() << "invalid topic name: " << topic;
