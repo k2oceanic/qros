@@ -48,11 +48,13 @@ public:
 
 public slots:
   void setTopic(QString topic){
-    if (topic_ != topic) {
+    try{
       topic_ = topic;
       interfacePtr()->setNode(getNode());
-      interfacePtr()->createRosPub(topic_, queue_size_, latched_);
+      interfacePtr()->createRosPub(topic_, queue_size_, latched_); 
       emit topicChanged();
+    }catch(...){
+      qWarning() << "invalid topic name: " << topic;
     }
   }
   QString getTopic() const {
