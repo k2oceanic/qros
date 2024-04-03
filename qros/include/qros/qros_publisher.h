@@ -62,7 +62,6 @@ public slots:
   void setQueueSize(int queueSize) {
     if (queue_size_ != queueSize) {
       queue_size_ = queueSize;
-      interfacePtr()->createRosPub(topic_, queue_size_, latched_);
       emit queueSizeChanged();
     }
   }
@@ -73,7 +72,6 @@ public slots:
   void setLatched(bool latched) {
     if (latched_ != latched) {
       latched_ = latched;
-      interfacePtr()->createRosPub(topic_, queue_size_, latched_);
       emit latchedChanged();
     }
   }
