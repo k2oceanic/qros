@@ -15,7 +15,7 @@
   <depend> sensor_msgs </depend>
   <depend> diagnostic_msgs </depend>
   <depend> hydraulic_interfaces </depend>
-
+  <depend> nav_msgs </depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 

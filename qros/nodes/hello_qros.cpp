@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   #endif
     QGuiApplication app(argc, argv);
 
-  registerQmlTypes();
+  qros::registerQmlTypes();
 
   QRosNode applicationNode;
   QQmlApplicationEngine engine;
