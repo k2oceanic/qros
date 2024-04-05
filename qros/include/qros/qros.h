@@ -12,6 +12,7 @@
 #include "qros_pose_stamped.h"
 #include "qros_joy.h"
 #include "qros_odometry.h"
+#include "qros_bool.h"
 
 
 
@@ -36,6 +37,8 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosJoySubscriber)
   REGISTER_QML_TYPE(QRosOdometryPublisher)
   REGISTER_QML_TYPE(QRosOdometrySubscriber)
+  REGISTER_QML_TYPE(QRosBoolPublisher)
+  REGISTER_QML_TYPE(QRosBoolSubscriber)
 }
 }
 
