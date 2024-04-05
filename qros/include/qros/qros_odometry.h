@@ -109,6 +109,8 @@ public:
   Q_PROPERTY(QVector3D linearVelocity READ getLinearVelocity NOTIFY odometryChanged)
   Q_PROPERTY(QVector3D angularVelocity READ getAngularVelocity NOTIFY odometryChanged)
   Q_PROPERTY(QString frameId READ getFrameId NOTIFY odometryChanged)
+  Q_PROPERTY(QString childFrameId READ getChildFrameId NOTIFY odometryChanged)
+
   Q_PROPERTY(QDateTime timestamp READ getTimestamp NOTIFY odometryChanged)
 
 public slots:
@@ -134,6 +136,10 @@ public slots:
 
   QString getFrameId() {
     return QString::fromStdString(subscriber_.msgBuffer().header.frame_id);
+  }
+
+  QString getChildFrameId() {
+    return QString::fromStdString(subscriber_.msgBuffer().child_frame_id);
   }
 
   QDateTime getTimestamp() {

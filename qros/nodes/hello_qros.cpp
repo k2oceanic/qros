@@ -1,4 +1,3 @@
-#include "minimal_publisher_node.hpp"
 #include "qros.h"
 
 #include <QGuiApplication>
