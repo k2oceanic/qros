@@ -46,4 +46,20 @@ ApplicationWindow {
             stringPub.setTopic(textField.text)
         }
     }
+
+    QRosRawPacketPublisher{
+        id: rawPub
+        node: applicationNode
+    }
+
+    Button {
+        id: myButton
+        anchors.left: myLabel.right
+        text: "Publish Raw Packet"
+        onClicked: {
+            rawPub.setTopic("/from_qml/raw_packet")
+            rawPub.setData("Hello World")  // Convert QString to QByteArray
+            rawPub.publish()
+        }
+    }
 }
