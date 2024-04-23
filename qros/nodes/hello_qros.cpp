@@ -1,4 +1,3 @@
-#include "minimal_publisher_node.hpp"
 #include "qros.h"
 
 #include <QGuiApplication>
@@ -18,7 +17,7 @@ int main(int argc, char *argv[])
   #endif
     QGuiApplication app(argc, argv);
 
-  registerQmlTypes();
+  qros::registerQmlTypes();
 
   QRosNode applicationNode;
   QQmlApplicationEngine engine;
