@@ -12,6 +12,7 @@ set(ROS_DEPENDS
     diagnostic_msgs
     qros_interfaces
     hydraulic_interfaces
+    io_interfaces
     nav_msgs
   )
 
