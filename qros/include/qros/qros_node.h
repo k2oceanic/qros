@@ -37,8 +37,9 @@ public slots:
   void declareParameter(const QString &param_name, const QVariant &default_value);
   QVariantMap getParameters();
   void updateParameters();
-  void setParameterAsync(const QString &node_name, const QString &param_name, const QVariant &value, int wait_ms = 1000);
-  void setParameter(const QString &node_name, const QString &param_name, const QVariant &value, int wait_ms = 1000);
+  void setParameter(const QString &param_name, const QVariant &value);
+  void setExternalParameterAsync(const QString &node_name, const QString &param_name, const QVariant &value, int wait_ms = 1000);
+  void setExternalParameter(const QString &node_name, const QString &param_name, const QVariant &value, int wait_ms = 1000);
 
 signals:
   void parametersChanged();

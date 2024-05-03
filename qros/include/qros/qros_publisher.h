@@ -82,7 +82,13 @@ public slots:
   }
 
   void publish(){
-    interfacePtr()->publish();
+    auto interface = interfacePtr();
+    if(interface){
+      interfacePtr()->publish();
+    }else{
+      RCLCPP_ERROR(getRosNode()->get_logger(), "Invalid interface pointer passed to QRosPublisher::publish()");
+    }
+
   }
 
 signals:

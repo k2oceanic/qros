@@ -170,16 +170,23 @@ void QRosNode::updateParameters()
   emit parametersChanged();
 }
 
-void QRosNode::setParameterAsync(const QString &node_name,
+void QRosNode::setParameter(const QString &param_name, const QVariant &value)
+{
+  auto param_value = paramValueFromQVariant(value);
+  rclcpp::Parameter param(param_name.toStdString(),param_value);
+  node_ptr_->set_parameter(param);
+}
+
+void QRosNode::setExternalParameterAsync(const QString &node_name,
                                  const QString &param_name,
                                  const QVariant &value,
                                  int wait_ms)
 {
-  std::thread t(&QRosNode::setParameter, this, node_name, param_name, value, wait_ms);
+  std::thread t(&QRosNode::setExternalParameter, this, node_name, param_name, value, wait_ms);
   t.detach();
 }
 
-void QRosNode::setParameter(const QString &node_name,
+void QRosNode::setExternalParameter(const QString &node_name,
                             const QString &param_name,
                             const QVariant &value,
                             int wait_ms)
