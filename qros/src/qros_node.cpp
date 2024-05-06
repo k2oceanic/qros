@@ -269,6 +269,33 @@ QVariant QRosNode::convertParameterToQVariant(const rclcpp::Parameter &param) {
     }
 }
 
+void QRosNode::listExternalParametersAsync(const QString &node_name, int wait_ms) {
+    std::thread([this, node_name, wait_ms]() {
+        if (!node_ptr_) {
+            emit parametersListResult(false, node_name, {}, "Node pointer is null!");
+            return;
+        }
+
+        auto param_client = std::make_shared<rclcpp::AsyncParametersClient>(node_ptr_, node_name.toStdString());
+        if (!param_client->wait_for_service(std::chrono::milliseconds(wait_ms))) {
+            emit parametersListResult(false, node_name, {}, "Service not available for node: " + node_name);
+            return;
+        }
+
+        auto list_future = param_client->list_parameters({}, 0);
+        try {
+            auto result = list_future.get();
+            QStringList param_names;
+            for (const auto& name : result.names) {
+                param_names.append(QString::fromStdString(name));
+            }
+            emit parametersListResult(true, node_name, param_names, "");
+        } catch (const std::exception& e) {
+            emit parametersListResult(false, node_name, {}, QString::fromStdString(e.what()));
+        }
+    }).detach();
+}
+
 QVariant QRosNode::convertArrayToVariantList(const rclcpp::Parameter &param) {
     QVariantList list;
     switch (param.get_type()) {

@@ -114,9 +114,35 @@ ApplicationWindow {
         }
 
         Row {
+            spacing: 10
             TextField{
                 id: paramName2
                 text: "my_parameter2"
+            }
+
+            Button {
+                text: "List All Parameters"
+                onClicked: {
+                    applicationNode.listExternalParametersAsync(nodeName.text, 1000) // Assuming timeout of 1000 ms
+                }
+            }
+
+            Label {
+                id: listLabel
+                text: "Parameter list will appear here."
+                wrapMode: Text.WordWrap
+            }
+
+            Connections {
+                target: applicationNode
+                onParametersListResult: {
+                    if (success) {
+                        var resultText = "Parameters available in " + nodeName.text + ":\n" + param_names.join("\n");
+                        listLabel.text = resultText;
+                    } else {
+                        listLabel.text = "Failed to list parameters from " + nodeName.text + ": " + error;
+                    }
+                }
             }
         }
     }
