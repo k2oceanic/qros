@@ -9,7 +9,7 @@ public:
     {
         // Declare and initialize a parameter
         this->declare_parameter<std::string>("my_parameter", "default_value");
-
+        this->declare_parameter<int>("my_parameter2", 1);
         // Set a callback to handle changes to parameters
         parameter_event_sub_ = this->add_on_set_parameters_callback(
             [this](const std::vector<rclcpp::Parameter> &parameters) {

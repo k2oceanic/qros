@@ -79,25 +79,45 @@ ApplicationWindow {
                 id: sendParam
                 text: "send"
                 onClicked: {
-                    applicationNode.setParameterAsync(nodeName.text,paramName.text,paramValue.text)
+                    applicationNode.setExternalParameterAsync(nodeName.text,paramName.text,paramValue.text)
+                }
+            }
+            Button{
+                id: getParam
+                text: "get"
+                onClicked: {
+                    applicationNode.getExternalParametersAsync(nodeName.text,[paramName.text, paramName2.text])
+                }
+            }
+
+            Label {
+                id: resultLabel
+                text: "Parameter result will appear here."
+            }
+
+            Component.onCompleted: {
+                applicationNode.parametersGetResult.connect(handleParametersGetResult);
+            }
+
+            function handleParametersGetResult(success, nodeName, params, error) {
+                if (success) {
+                    var resultText = "Parameters from " + nodeName + ":\n";
+                    for (var key in params) {
+                        resultText += key + ": " + params[key] + "\n";
+                    }
+                    resultLabel.text = resultText;
+                } else {
+                    console.log("Failed to get parameters from " + nodeName + ": " + error);
+                    resultLabel.text = "Failed to get parameters: " + error;
                 }
             }
         }
-    }
 
-    QRosRawPacketPublisher{
-        id: rawPub
-    }
-        id: myButton
-    Button {
-
-        node: applicationNode
-        onClicked: {
-        text: "Publish Raw Packet"
-        anchors.left: myLabel.right
-            rawPub.setTopic("/from_qml/raw_packet")
-            rawPub.setData("Hello World")  // Convert QString to QByteArray
-            rawPub.publish()
+        Row {
+            TextField{
+                id: paramName2
+                text: "my_parameter2"
+            }
         }
     }
 }
