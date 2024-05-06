@@ -14,6 +14,7 @@
 #include "qros_odometry.h"
 #include "qros_bool.h"
 #include "qros_twist_stamped.h"
+#include "qros_raw_analog_array.h"
 
 
 
@@ -42,6 +43,7 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosBoolSubscriber)
   REGISTER_QML_TYPE(QRosTwistStampedPublisher)
   REGISTER_QML_TYPE(QRosTwistStampedSubscriber)
+  REGISTER_QML_TYPE(QRosRawAnalogSubscriber)
 }
 }
 

@@ -13,6 +13,7 @@ set(ROS_DEPENDS
     qros_interfaces
     hydraulic_interfaces
     nav_msgs
+    io_interfaces
   )
 
 set(EXTERNAL_DEPENDS
