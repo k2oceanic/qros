@@ -64,7 +64,7 @@ rclcpp::ParameterValue QRosNode::paramValueFromQVariant(const QVariant &value)
       param_value = rclcpp::ParameterValue(value.toBool());
       break;
     default:
-      // Log or handle unexpected type
+      RCLCPP_ERROR(node_ptr_->get_logger(), "Unhandled QVariant type: %s ",value.typeName());
       break;
     }
   }
@@ -162,9 +162,6 @@ void QRosNode::updateParameters()
       }
       parameters_[QString::fromStdString(key)] = list;
       break;
-      // default:
-      //   // Handle unknown types or skip
-      //   break;
     }
   }
   emit parametersChanged();
@@ -216,14 +213,14 @@ void QRosNode::getExternalParametersAsync(const QString &node_name, const QStrin
 void QRosNode::getExternalParameters(const QString &node_name, const QStringList &param_names, int wait_ms)
 {
     if (!node_ptr_) {
-        qDebug() << "Node pointer is null!";
+        RCLCPP_ERROR(node_ptr_->get_logger(), "Node pointer is null!");
         emit parametersGetResult(false, node_name, QVariantMap(), "Node pointer is null");
         return;
     }
 
     auto param_client = std::make_shared<rclcpp::AsyncParametersClient>(node_ptr_, node_name.toStdString());
     if (!param_client->wait_for_service(std::chrono::milliseconds(wait_ms))) {
-        qDebug() << "Service not available for node: " << node_name;
+        RCLCPP_WARN(node_ptr_->get_logger(), "Service not available for node: %s", node_name);
         emit parametersGetResult(false, node_name, QVariantMap(), "Service not available");
         return;
     }
@@ -239,33 +236,12 @@ void QRosNode::getExternalParameters(const QString &node_name, const QStringList
         auto values = result.get();
         QVariantMap params;
         for (const auto &param : values) {
-            params[QString::fromStdString(param.get_name())] = convertParameterToQVariant(param);
+            params[QString::fromStdString(param.get_name())] = paramValueToQVariant(param);
         }
         emit parametersGetResult(true, node_name, params, "");
     } catch (const std::exception &e) {
-        qDebug() << "Exception fetching parameters: " << e.what();
+        RCLCPP_ERROR(node_ptr_->get_logger(), "Exception fetching parameters: %s", e.what());
         emit parametersGetResult(false, node_name, QVariantMap(), QString::fromStdString(e.what()));
-    }
-}
-
-
-QVariant QRosNode::convertParameterToQVariant(const rclcpp::Parameter &param) {
-    switch (param.get_type()) {
-        case rclcpp::ParameterType::PARAMETER_BOOL:
-            return QVariant(param.as_bool());
-        case rclcpp::ParameterType::PARAMETER_INTEGER:
-            return QVariant(qlonglong(param.as_int()));
-        case rclcpp::ParameterType::PARAMETER_DOUBLE:
-            return QVariant(param.as_double());
-        case rclcpp::ParameterType::PARAMETER_STRING:
-            return QVariant(QString::fromStdString(param.as_string()));
-        case rclcpp::ParameterType::PARAMETER_BOOL_ARRAY:
-        case rclcpp::ParameterType::PARAMETER_INTEGER_ARRAY:
-        case rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY:
-        case rclcpp::ParameterType::PARAMETER_STRING_ARRAY:
-            return convertArrayToVariantList(param);
-        default:
-            return QVariant();
     }
 }
 
@@ -278,6 +254,7 @@ void QRosNode::listExternalParametersAsync(const QString &node_name, int wait_ms
 
         auto param_client = std::make_shared<rclcpp::AsyncParametersClient>(node_ptr_, node_name.toStdString());
         if (!param_client->wait_for_service(std::chrono::milliseconds(wait_ms))) {
+            RCLCPP_WARN(node_ptr_->get_logger(), "Service not avalailable for node: %s", node_name);
             emit parametersListResult(false, node_name, {}, "Service not available for node: " + node_name);
             return;
         }
@@ -291,12 +268,37 @@ void QRosNode::listExternalParametersAsync(const QString &node_name, int wait_ms
             }
             emit parametersListResult(true, node_name, param_names, "");
         } catch (const std::exception& e) {
+            RCLCPP_ERROR(node_ptr_->get_logger(), "Exception listing parameters: %s", e.what());
             emit parametersListResult(false, node_name, {}, QString::fromStdString(e.what()));
         }
     }).detach();
 }
 
-QVariant QRosNode::convertArrayToVariantList(const rclcpp::Parameter &param) {
+QVariant QRosNode::paramValueToQVariant(const rclcpp::Parameter &param) {
+    switch (param.get_type()) {
+        case rclcpp::ParameterType::PARAMETER_BOOL:
+            return QVariant(param.as_bool());
+        case rclcpp::ParameterType::PARAMETER_INTEGER:
+            return QVariant(qlonglong(param.as_int()));
+        case rclcpp::ParameterType::PARAMETER_DOUBLE:
+            return QVariant(param.as_double());
+        case rclcpp::ParameterType::PARAMETER_STRING:
+            return QVariant(QString::fromStdString(param.as_string()));
+        case rclcpp::ParameterType::PARAMETER_BOOL_ARRAY:
+        case rclcpp::ParameterType::PARAMETER_INTEGER_ARRAY:
+        case rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY:
+        case rclcpp::ParameterType::PARAMETER_STRING_ARRAY:
+            return arrayToVariantList(param);
+        case rclcpp::ParameterType::PARAMETER_NOT_SET:
+            RCLCPP_ERROR(node_ptr_->get_logger(), "Parameter not set");
+            break;
+        default:
+            RCLCPP_ERROR(node_ptr_->get_logger(), "Unhandled parameter array type: %s ",param.get_type_name().c_str());
+            break;
+    }
+}
+
+QVariant QRosNode::arrayToVariantList(const rclcpp::Parameter &param) {
     QVariantList list;
     switch (param.get_type()) {
     case rclcpp::ParameterType::PARAMETER_INTEGER_ARRAY:

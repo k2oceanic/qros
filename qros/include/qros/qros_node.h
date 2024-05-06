@@ -10,7 +10,6 @@
 #include <QVariant>
 #include <QStringList>
 #include <QVariantMap>
-#include <QDebug>
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -24,8 +23,8 @@ public:
   rclcpp::Node::SharedPtr getNodePtr() const;
   void setNodePtr(const rclcpp::Node::SharedPtr &newNode_ptr);
   rclcpp::ParameterValue paramValueFromQVariant(const QVariant &value);
-  QVariant convertArrayToVariantList(const rclcpp::Parameter &param);
-  QVariant convertParameterToQVariant(const rclcpp::Parameter &param);
+  QVariant arrayToVariantList(const rclcpp::Parameter &param);
+  QVariant paramValueToQVariant(const rclcpp::Parameter &param);
 
 public slots:
   void spinRosWithTimer(int durration = 10);
@@ -46,7 +45,7 @@ public slots:
   void getExternalParametersAsync(const QString &node_name, const QStringList &param_names, int wait_ms = 1000);
   void getExternalParameters(const QString &node_name, const QStringList &param_names, int wait_ms = 1000);
   void listExternalParametersAsync(const QString &node_name, int wait_ms = 1000);
-  
+
 signals:
   void parametersChanged();
   void parameterSetResult(bool result, QString node_name, QString param_name);
