@@ -15,7 +15,8 @@
 #include "qros_bool.h"
 #include "qros_twist_stamped.h"
 #include "qros_raw_analog_array.h"
-
+#include "qros_wrench_stamped.h"
+#include "qros_thrust_stamped.h"
 
 
 #define REGISTER_QML_TYPE(TYPE) \
@@ -44,6 +45,10 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosTwistStampedPublisher)
   REGISTER_QML_TYPE(QRosTwistStampedSubscriber)
   REGISTER_QML_TYPE(QRosRawAnalogSubscriber)
+  REGISTER_QML_TYPE(QRosWrenchStampedSubscriber)
+  REGISTER_QML_TYPE(QRosWrenchStampedPublisher)
+  REGISTER_QML_TYPE(QRosThrustStampedPublisher)
+  REGISTER_QML_TYPE(QRosThrustStampedSubscriber)
 }
 }
 
