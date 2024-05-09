@@ -18,6 +18,9 @@ public:
   Q_PROPERTY(QDateTime timestamp READ getTimestamp WRITE setTimestamp NOTIFY joyChanged)
 
 public slots:
+  void resizeAxes(int size){
+    publisher_.msgBuffer().axes.resize(size);
+  }
   QVector<float> getAxes() {
     auto axes = QVector<float>::fromStdVector(publisher_.msgBuffer().axes);
     return axes;
@@ -26,7 +29,15 @@ public slots:
     publisher_.msgBuffer().axes = axes.toStdVector();
     emit joyChanged();
   }
+  void setAxis(int index, float value){
+    if(index < publisher_.msgBuffer().axes.size()){
+      publisher_.msgBuffer().axes[index] = value;
+    }
+  }
 
+  void resizeButtons(int size){
+    publisher_.msgBuffer().buttons.resize(size);
+  }
   QVector<int> getButtons() {
     auto buttons = QVector<int>::fromStdVector(publisher_.msgBuffer().buttons);
     return buttons;
@@ -34,6 +45,11 @@ public slots:
   void setButtons(QVector<int> buttons) {
     publisher_.msgBuffer().buttons = buttons.toStdVector();
     emit joyChanged();
+  }
+  void setButton(int index, int value){
+    if(index < publisher_.msgBuffer().buttons.size()){
+      publisher_.msgBuffer().buttons[index] = value;
+    }
   }
 
   QString getFrameId() {
@@ -70,6 +86,9 @@ class QRosJoySubscriber : public QRosSubscriber {
 public:
   Q_PROPERTY(QVector<float> axes READ getAxes NOTIFY joyChanged)
   Q_PROPERTY(QVector<int> buttons READ getButtons NOTIFY joyChanged)
+  Q_PROPERTY(QString frameId READ getFrameId NOTIFY joyChanged)
+  Q_PROPERTY(QDateTime timestamp READ getTimestamp NOTIFY joyChanged)
+
 
 public slots:
   QVector<float> getAxes() {
@@ -80,6 +99,16 @@ public slots:
   QVector<int> getButtons() {
     auto buttons = QVector<int>::fromStdVector(subscriber_.msgBuffer().buttons);
     return buttons;
+  }
+
+  QString getFrameId() {
+    return QString::fromStdString(subscriber_.msgBuffer().header.frame_id);
+  }
+
+  QDateTime getTimestamp() {
+    qint64 totalMSecs = static_cast<qint64>(subscriber_.msgBuffer().header.stamp.sec) * 1000LL +
+                        static_cast<qint64>(subscriber_.msgBuffer().header.stamp.nanosec) / 1000000LL;
+    return QDateTime::fromMSecsSinceEpoch(totalMSecs);
   }
 
 signals:
