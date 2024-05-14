@@ -14,6 +14,9 @@ set(ROS_DEPENDS
     hydraulic_interfaces
     io_interfaces
     nav_msgs
+    io_interfaces
+    geometry_msgs
+    propulsion_interfaces
   )
 
 set(EXTERNAL_DEPENDS

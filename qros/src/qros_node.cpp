@@ -9,7 +9,12 @@ QRosNode::QRosNode(QObject *parent)
 
 rclcpp::Node::SharedPtr QRosNode::getNodePtr() const
 {
+  if(node_ptr_){
     return node_ptr_;
+  }
+  else {
+    return nullptr;
+  }
 }
 
 void QRosNode::setNodePtr(const rclcpp::Node::SharedPtr &newNode_ptr)

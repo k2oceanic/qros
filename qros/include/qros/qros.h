@@ -17,6 +17,10 @@
 #include "qros_raw_packet.h"
 #include "qros_settings.h"
 #include "qros_float32.h"
+#include "qros_raw_analog_array.h"
+#include "qros_wrench_stamped.h"
+#include "qros_thrust_stamped.h"
+#include "qros_range.h"
 
 
 #define REGISTER_QML_TYPE(TYPE) \
@@ -60,6 +64,13 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosValvePublisher)
   REGISTER_QML_TYPE(QRosRawPacketPublisher)
   REGISTER_QML_TYPE(QRosRawPacketSubscriber)
+  REGISTER_QML_TYPE(QRosRangeSubscriber)
+  REGISTER_QML_TYPE(QRosRangePublisher)
+  REGISTER_QML_TYPE(QRosThrustStampedSubscriber)
+  REGISTER_QML_TYPE(QRosThrustStampedPublisher)
+  REGISTER_QML_TYPE(QRosWrenchStampedPublisher)
+  REGISTER_QML_TYPE(QRosWrenchStampedSubscriber)
+  REGISTER_QML_TYPE(QRosRawAnalogSubscriber)
 }
 }
 
