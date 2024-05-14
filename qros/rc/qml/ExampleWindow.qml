@@ -79,25 +79,71 @@ ApplicationWindow {
                 id: sendParam
                 text: "send"
                 onClicked: {
-                    applicationNode.setParameterAsync(nodeName.text,paramName.text,paramValue.text)
+                    applicationNode.setExternalParameterAsync(nodeName.text,paramName.text,paramValue.text)
+                }
+            }
+            Button{
+                id: getParam
+                text: "get"
+                onClicked: {
+                    applicationNode.getExternalParametersAsync(nodeName.text,[paramName.text, paramName2.text])
+                }
+            }
+
+            Label {
+                id: resultLabel
+                text: "Parameter result will appear here."
+            }
+
+            Component.onCompleted: {
+                applicationNode.parametersGetResult.connect(handleParametersGetResult);
+            }
+
+            function handleParametersGetResult(success, nodeName, params, error) {
+                if (success) {
+                    var resultText = "Parameters from " + nodeName + ":\n";
+                    for (var key in params) {
+                        resultText += key + ": " + params[key] + "\n";
+                    }
+                    resultLabel.text = resultText;
+                } else {
+                    console.log("Failed to get parameters from " + nodeName + ": " + error);
+                    resultLabel.text = "Failed to get parameters: " + error;
                 }
             }
         }
-    }
 
-    QRosRawPacketPublisher{
-        id: rawPub
-    }
-        id: myButton
-    Button {
+        Row {
+            spacing: 10
+            TextField{
+                id: paramName2
+                text: "my_parameter2"
+            }
 
-        node: applicationNode
-        onClicked: {
-        text: "Publish Raw Packet"
-        anchors.left: myLabel.right
-            rawPub.setTopic("/from_qml/raw_packet")
-            rawPub.setData("Hello World")  // Convert QString to QByteArray
-            rawPub.publish()
+            Button {
+                text: "List All Parameters"
+                onClicked: {
+                    applicationNode.listExternalParametersAsync(nodeName.text, 1000) // Assuming timeout of 1000 ms
+                }
+            }
+
+            Label {
+                id: listLabel
+                text: "Parameter list will appear here."
+                wrapMode: Text.WordWrap
+            }
+
+            Connections {
+                target: applicationNode
+                onParametersListResult: {
+                    if (success) {
+                        var resultText = "Parameters available in " + nodeName.text + ":\n" + param_names.join("\n");
+                        listLabel.text = resultText;
+                    } else {
+                        listLabel.text = "Failed to list parameters from " + nodeName.text + ": " + error;
+                    }
+                }
+            }
         }
     }
 }
