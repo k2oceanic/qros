@@ -17,7 +17,6 @@
   <depend> hydraulic_interfaces </depend>
   <depend> io_interfaces </depend>
   <depend> nav_msgs </depend>
-  <depend> io_interfaces </depend>
   <depend> geometry_msgs </depend>
   <depend> propulsion_interfaces </depend>
 

@@ -5,6 +5,7 @@
 #include "qros_string_subscriber.h"
 #include "qros_string_publisher.h"
 #include "qros_valve_publisher.h"
+#include "qros_valve_stamped.h"
 #include "qros_temperature_subscriber.h"
 #include "qros_pressure_subscriber.h"
 #include "qros_diagnostic_status_subscriber.h"
@@ -62,6 +63,7 @@ void registerQmlTypes(){
 
   // custom msgs (roship)
   REGISTER_QML_TYPE(QRosValvePublisher)
+  REGISTER_QML_TYPE(QRosValveStampedPublisher)
   REGISTER_QML_TYPE(QRosRawPacketPublisher)
   REGISTER_QML_TYPE(QRosRawPacketSubscriber)
   REGISTER_QML_TYPE(QRosRangeSubscriber)
