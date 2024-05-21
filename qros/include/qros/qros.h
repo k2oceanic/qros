@@ -44,6 +44,8 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosBoolSubscriber)
   REGISTER_QML_TYPE(QRosFloat32Publisher)
   REGISTER_QML_TYPE(QRosFloat32Subscriber)
+  REGISTER_QML_TYPE(QRosFloat32MultiArrayPublisher)
+  REGISTER_QML_TYPE(QRosFloat32MultiArraySubscriber)
 
   // sensor_msgs
   REGISTER_QML_TYPE(QRosTemperatureSubscriber)
