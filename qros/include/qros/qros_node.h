@@ -23,6 +23,8 @@ public:
   rclcpp::Node::SharedPtr getNodePtr() const;
   void setNodePtr(const rclcpp::Node::SharedPtr &newNode_ptr);
   rclcpp::ParameterValue paramValueFromQVariant(const QVariant &value);
+  QVariant arrayToVariantList(const rclcpp::Parameter &param);
+  QVariant paramValueToQVariant(const rclcpp::Parameter &param);
 
 public slots:
   void spinRosWithTimer(int durration = 10);
@@ -40,11 +42,15 @@ public slots:
   void setParameter(const QString &param_name, const QVariant &value);
   void setExternalParameterAsync(const QString &node_name, const QString &param_name, const QVariant &value, int wait_ms = 1000);
   void setExternalParameter(const QString &node_name, const QString &param_name, const QVariant &value, int wait_ms = 1000);
+  void getExternalParametersAsync(const QString &node_name, const QStringList &param_names, int wait_ms = 1000);
+  void getExternalParameters(const QString &node_name, const QStringList &param_names, int wait_ms = 1000);
+  void listExternalParametersAsync(const QString &node_name, int wait_ms = 1000);
 
 signals:
   void parametersChanged();
   void parameterSetResult(bool result, QString node_name, QString param_name);
-
+  void parametersGetResult(bool success, QString node_name, QVariantMap params, QString error = "");
+  void parametersListResult(bool success, QString node_name, QStringList param_names, QString error = "");
 private:
   rclcpp::Node::SharedPtr node_ptr_;
   QTimer *ros_timer_;
