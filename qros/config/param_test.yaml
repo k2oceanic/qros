@@ -1,6 +1,14 @@
 /**:
   ros__parameters:
-    cmd:
-      ip: "192.168.10.157"
-      port: 9001
-    response_port: 9005
+    input_topics:
+      - "/input_topic1"
+      - "/input_topic2"
+      - "/input_topic3"
+    output_topics:
+      - "/latched_topic1"
+      - "/latched_topic2"
+      - "/latched_topic3"
+    message_types:
+      - "std_msgs/msg/String"
+      - "std_msgs/msg/Int32"
+      - "geometry_msgs/msg/Point"

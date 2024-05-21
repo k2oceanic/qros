@@ -34,6 +34,24 @@ ApplicationWindow {
         node: applicationNode
     }
 
+
+    QRosStringPublisher{
+        id: syncStringPub
+        node: applicationNode
+        Component.onCompleted:{
+            topic="/input_topic1"
+        }
+    }
+
+    QRosStringSubscriber{
+        id: syncStringSub
+        node: applicationNode
+        latched: true
+        Component.onCompleted:{
+            topic="/latched_topic1"
+        }
+    }
+
     Column{
         Label{
             id: myLabel
@@ -205,6 +223,15 @@ ApplicationWindow {
             onClicked: {
                 jointStatePublisher.positions = [parseFloat(positionField1.text), parseFloat(positionField2.text)]
                 jointStatePublisher.publish() // Assuming there's a publish method to send the message
+            }
+        }
+
+        TextField{
+            id: syncLabel
+            text: syncStringSub.data
+            onTextChanged: {
+                syncStringPub.data = text
+                syncStringPub.publish()
             }
         }
     }

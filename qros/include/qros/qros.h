@@ -2,6 +2,8 @@
 
 #include "qros_node.h"
 #include "qqml.h"
+#include "qros_publisher.h"
+#include "qros_subscriber.h"
 #include "qros_string_subscriber.h"
 #include "qros_string_publisher.h"
 #include "qros_valve_publisher.h"
