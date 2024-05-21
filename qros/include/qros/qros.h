@@ -11,6 +11,7 @@
 #include "qros_pressure_subscriber.h"
 #include "qros_diagnostic_status_subscriber.h"
 #include "qros_diagnostic_array_subscriber.h"
+#include "qros_joint_state.h"
 #include "qros_pose_stamped.h"
 #include "qros_joy.h"
 #include "qros_odometry.h"
@@ -47,6 +48,8 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosFluidPressureSubscriber)
   REGISTER_QML_TYPE(QRosJoyPublisher)
   REGISTER_QML_TYPE(QRosJoySubscriber)
+  REGISTER_QML_TYPE(QRosJointStatePublisher)
+  REGISTER_QML_TYPE(QRosJointStateSubscriber)
 
   // geometry_msgs
   REGISTER_QML_TYPE(QRosPoseStampedPublisher)

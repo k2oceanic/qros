@@ -13,7 +13,6 @@ ApplicationWindow {
     height: 1080
 
     Component.onCompleted: {
-        // let intList = [1, 2, 3, 4]
         applicationNode.declareParameter("cmd.ip", "0.0.0.0");
         applicationNode.declareParameter("cmd.port", 0);
         applicationNode.declareParameter("vector", [1, 2, 3, 4, 5]);
@@ -33,15 +32,11 @@ ApplicationWindow {
     QRosStringPublisher{
         id: stringPub
         node: applicationNode
-        // Component.onCompleted:{
-        //     topic="/from_qml"
-        // }
-
     }
+
     Column{
         Label{
             id: myLabel
-           // anchors.centerIn: parent
             text: stringSub.data
             onTextChanged: {
                 stringPub.data = text
@@ -61,6 +56,7 @@ ApplicationWindow {
             id: paramlabel
             text: applicationNode.parameters["cmd.ip"]
         }
+
         Row{
             spacing:  10
             TextField{
@@ -143,6 +139,72 @@ ApplicationWindow {
                         listLabel.text = "Failed to list parameters from " + nodeName.text + ": " + error;
                     }
                 }
+            }
+        }
+
+        // Joint State Publisher
+        QRosJointStatePublisher {
+            id: jointStatePublisher
+            node: applicationNode
+            Component.onCompleted: {
+                topic = "/joint_states"
+            }
+
+            jointNames: ["joint1", "joint2"]
+            positions: [0.0, 0.0]
+            velocities: [0.0, 0.0]
+            efforts: [0.0, 0.0]
+        }
+
+        // Joint State Subscriber
+        QRosJointStateSubscriber {
+            id: jointStateSubscriber
+            node: applicationNode
+            Component.onCompleted: {
+                topic = "/joint_states"
+            }
+
+            onJointStateChanged: {
+                console.log("Joint state updated")
+                console.log("Joint names:", jointStateSubscriber.jointNames)
+                console.log("Positions:", jointStateSubscriber.positions)
+                console.log("Velocities:", jointStateSubscriber.velocities)
+                console.log("Efforts:", jointStateSubscriber.efforts)
+            }
+        }
+
+        // UI Elements to display joint states
+        Label {
+            text: "Joint Names: " + jointStateSubscriber.jointNames.join(", ")
+        }
+        Label {
+            text: "Positions: " + jointStateSubscriber.positions.join(", ")
+        }
+        Label {
+            text: "Velocities: " + jointStateSubscriber.velocities.join(", ")
+        }
+        Label {
+            text: "Efforts: " + jointStateSubscriber.efforts.join(", ")
+        }
+
+        // UI Elements to modify joint states
+        Row {
+            TextField {
+                id: positionField1
+                placeholderText: "Position 1"
+                onAccepted: jointStatePublisher.positions[0] = parseFloat(positionField1.text)
+            }
+            TextField {
+                id: positionField2
+                placeholderText: "Position 2"
+                onAccepted: jointStatePublisher.positions[1] = parseFloat(positionField2.text)
+            }
+        }
+        Button {
+            text: "Update Joint States"
+            onClicked: {
+                jointStatePublisher.positions = [parseFloat(positionField1.text), parseFloat(positionField2.text)]
+                jointStatePublisher.publish() // Assuming there's a publish method to send the message
             }
         }
     }
