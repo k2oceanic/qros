@@ -47,8 +47,8 @@ private:
     subscriptions_.push_back(subscription);
 
     // Output topic publishers will be created on demand in the callback
-    RCLCPP_INFO(this->get_logger(), "Subscribed to topic: %s with message type: %s", input_topic.c_str(), message_type.c_str());
-    RCLCPP_INFO(this->get_logger(), "Will publish to latched topic: %s", output_topic.c_str());
+    RCLCPP_DEBUG(this->get_logger(), "Subscribed to topic: %s with message type: %s", input_topic.c_str(), message_type.c_str());
+    RCLCPP_DEBUG(this->get_logger(), "Will publish to latched topic: %s", output_topic.c_str());
   }
 
   void topic_callback(const std::string &output_topic, const std::string &message_type, std::shared_ptr<rclcpp::SerializedMessage> msg)
@@ -59,9 +59,9 @@ private:
       auto publisher = this->create_generic_publisher(output_topic, message_type, qos);
       publishers_[output_topic] = publisher;
     }
-    RCLCPP_INFO(this->get_logger(), "Received message of size: '%zu' bytes for topic: '%s'", msg->size(), output_topic.c_str());
+    RCLCPP_DEBUG(this->get_logger(), "Received message of size: '%zu' bytes for topic: '%s'", msg->size(), output_topic.c_str());
     publishers_[output_topic]->publish(*msg);
-    RCLCPP_INFO(this->get_logger(), "Published message of size: '%zu' bytes on topic: '%s'", msg->size(), output_topic.c_str());
+    RCLCPP_DEBUG(this->get_logger(), "Published message of size: '%zu' bytes on topic: '%s'", msg->size(), output_topic.c_str());
   }
 
   std::vector<rclcpp::GenericSubscription::SharedPtr> subscriptions_;
