@@ -1,4 +1,6 @@
-#pragma once
+// #pragma once
+#ifndef QROS_H
+#define QROS_H
 
 #include "qros_node.h"
 #include "qqml.h"
@@ -27,63 +29,14 @@
 #include "qros_thrust_stamped.h"
 #include "qros_range.h"
 
-
 #define REGISTER_QML_TYPE(TYPE) \
   qmlRegisterType<TYPE>(QML_PACKAGE, QML_PACKAGE_VERSION_MAJOR, QML_PACKAGE_VERSION_MINOR, #TYPE); \
   qRegisterMetaType<TYPE*>("const " #TYPE "*");
 
 QROS_NS_HEAD
 namespace qros {
-void registerQmlTypes(){
-  REGISTER_QML_TYPE(QRosNode)
-
-  // std_msgs
-  REGISTER_QML_TYPE(QRosStringSubscriber)
-  REGISTER_QML_TYPE(QRosStringPublisher)
-  REGISTER_QML_TYPE(QRosBoolPublisher)
-  REGISTER_QML_TYPE(QRosBoolSubscriber)
-  REGISTER_QML_TYPE(QRosFloat32Publisher)
-  REGISTER_QML_TYPE(QRosFloat32Subscriber)
-  REGISTER_QML_TYPE(QRosFloat32MultiArrayPublisher)
-  REGISTER_QML_TYPE(QRosFloat32MultiArraySubscriber)
-
-  // sensor_msgs
-  REGISTER_QML_TYPE(QRosTemperatureSubscriber)
-  REGISTER_QML_TYPE(QRosFluidPressureSubscriber)
-  REGISTER_QML_TYPE(QRosJoyPublisher)
-  REGISTER_QML_TYPE(QRosJoySubscriber)
-  REGISTER_QML_TYPE(QRosJointStatePublisher)
-  REGISTER_QML_TYPE(QRosJointStateSubscriber)
-
-  // geometry_msgs
-  REGISTER_QML_TYPE(QRosPoseStampedPublisher)
-  REGISTER_QML_TYPE(QRosPoseStampedSubscriber)
-  REGISTER_QML_TYPE(QRosTwistStampedPublisher)
-  REGISTER_QML_TYPE(QRosTwistStampedSubscriber)
-
-  // nav_msgs
-  REGISTER_QML_TYPE(QRosOdometryPublisher)
-  REGISTER_QML_TYPE(QRosOdometrySubscriber)
-
-  // diagnostic_msgs
-  REGISTER_QML_TYPE(QRosDiagnosticStatusSubscriber)
-  REGISTER_QML_TYPE(QRosDiagnosticArraySubscriber)
-
-  // custom msgs (roship)
-  REGISTER_QML_TYPE(QRosValvePublisher)
-  REGISTER_QML_TYPE(QRosValveStampedPublisher)
-  REGISTER_QML_TYPE(QRosValvePackSubscriber)
-  REGISTER_QML_TYPE(QRosValvePackPublisher)
-  REGISTER_QML_TYPE(QRosRawPacketPublisher)
-  REGISTER_QML_TYPE(QRosRawPacketSubscriber)
-  REGISTER_QML_TYPE(QRosRangeSubscriber)
-  REGISTER_QML_TYPE(QRosRangePublisher)
-  REGISTER_QML_TYPE(QRosThrustStampedSubscriber)
-  REGISTER_QML_TYPE(QRosThrustStampedPublisher)
-  REGISTER_QML_TYPE(QRosWrenchStampedPublisher)
-  REGISTER_QML_TYPE(QRosWrenchStampedSubscriber)
-  REGISTER_QML_TYPE(QRosRawAnalogSubscriber)
+void registerQmlTypes(); // Declaration
 }
-}
-
 QROS_NS_FOOT
+
+#endif
