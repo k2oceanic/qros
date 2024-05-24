@@ -6,78 +6,114 @@
 QROS_NS_HEAD
 
 
-class QRosSubscriberInterface{
+class QRosSubscriberInterface {
 public:
   typedef std::shared_ptr<QRosSubscriberInterface> SharedPtr;
   virtual void setNode(QRosNode* node) = 0;
-  // virtual void publish() = 0;
-  virtual void subscribe(QString topic, int queue_size) = 0;
-  virtual QString getTopic() = 0 ;
+  virtual void subscribe(QString topic, int queue_size, bool latched) = 0;
+  virtual QString getTopic() = 0;
   virtual void setCallback(std::function<void()> callback) = 0;
 };
 
 template <typename msg_T>
-class QRosTypedSubscriber: public QRosSubscriberInterface{
+class QRosTypedSubscriber: public QRosSubscriberInterface {
 public:
-  void setNode(QRosNode* node){
+  void setNode(QRosNode* node) {
     ros_node_ptr_ = node->getNodePtr();
   }
-  // void publish(){
-  //   ros_pub_->publish(msg_buffer_);
-  // }
-  void subscribe(QString topic, int queue_size = 1){
+
+  void subscribe(QString topic, int queue_size = 1, bool latched = false) {
+    auto qos = latched ? rclcpp::QoS(rclcpp::KeepLast(queue_size)).transient_local() : rclcpp::QoS(queue_size);
     ros_sub_ = ros_node_ptr_->template create_subscription<msg_T>(
-        topic.toStdString(), queue_size, std::bind(&QRosTypedSubscriber::rosCallback, this, std::placeholders::_1));
+        topic.toStdString(), qos, std::bind(&QRosTypedSubscriber::rosCallback, this, std::placeholders::_1));
   }
-  QString getTopic(){
+
+  QString getTopic() {
     return QString::fromStdString(ros_sub_->get_topic_name());
   }
-  msg_T & msgBuffer(){return msg_buffer_;}
-  void setCallback(std::function<void()> callback){
-    callback_=callback;
+
+  msg_T & msgBuffer() { return msg_buffer_; }
+
+  void setCallback(std::function<void()> callback) {
+    callback_ = callback;
   }
+
 private:
   msg_T msg_buffer_;
-  void rosCallback(const typename msg_T::SharedPtr msg);
+  void rosCallback(const typename msg_T::SharedPtr msg) {
+    msg_buffer_ = *msg;
+    callback_();
+  }
+
   rclcpp::Node::SharedPtr ros_node_ptr_;
   typename rclcpp::Subscription<msg_T>::SharedPtr ros_sub_;
   std::function<void()> callback_;
 };
 
-template<typename msg_T>
-void QRosTypedSubscriber<msg_T>::rosCallback(const typename msg_T::SharedPtr msg){
-  msg_buffer_ = *msg;
-  callback_();
-}
-
-class QRosSubscriber : public QRosObject{
+class QRosSubscriber : public QRosObject {
   Q_OBJECT
 public:
   Q_PROPERTY(QString topic READ getTopic WRITE setTopic NOTIFY topicChanged)
+  Q_PROPERTY(int queueSize READ getQueueSize WRITE setQueueSize NOTIFY queueSizeChanged)
+  Q_PROPERTY(bool latched READ isLatched WRITE setLatched NOTIFY latchedChanged)
+
 public slots:
-  void setTopic(QString topic){
-    if(getRosNode()!=nullptr){
+  void setTopic(QString topic) {
+    if (getRosNode() != nullptr) {
       interfacePtr()->setNode(getNode());
-      interfacePtr()->setCallback([this]() { handleMsg();});
-      interfacePtr()->subscribe(topic,1);
+      interfacePtr()->setCallback([this]() { handleMsg(); });
+      interfacePtr()->subscribe(topic, queue_size_, latched_);
       emit topicChanged();
-    }else{
-      qWarning() << "subcriber topic changed before node was set! " <<topic;
+    } else {
+      qWarning() << "subscriber topic changed before node was set! " << topic;
     }
   }
-  QString getTopic(){
+
+  QString getTopic() {
     return interfacePtr()->getTopic();
   }
+
+  void setQueueSize(int queueSize) {
+    if (queue_size_ != queueSize) {
+      queue_size_ = queueSize;
+      emit queueSizeChanged();
+    }
+  }
+
+  int getQueueSize() const {
+    return queue_size_;
+  }
+
+  void setLatched(bool latched) {
+    if (latched_ != latched) {
+      latched_ = latched;
+      emit latchedChanged();
+    }
+  }
+
+  bool isLatched() const {
+    return latched_;
+  }
+
 signals:
   void topicChanged();
+  void queueSizeChanged();
+  void latchedChanged();
   void msgReceived();
+
 protected:
-  virtual void handleMsg(){
+  virtual void handleMsg() {
     emit msgReceived();
     onMsgReceived();
   }
+
   virtual void onMsgReceived() = 0;
   virtual QRosSubscriberInterface * interfacePtr() = 0;
+
+  QString topic_;
+  int queue_size_ = 10;
+  bool latched_ = false;
 };
+
 
 QROS_NS_FOOT
