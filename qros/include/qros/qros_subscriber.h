@@ -26,11 +26,24 @@ public:
   //   ros_pub_->publish(msg_buffer_);
   // }
   void subscribe(QString topic, int queue_size = 1){
+    if(topic == ""){
+      ros_sub_ = nullptr;
+      return;
+    }
+    try{
     ros_sub_ = ros_node_ptr_->template create_subscription<msg_T>(
         topic.toStdString(), queue_size, std::bind(&QRosTypedSubscriber::rosCallback, this, std::placeholders::_1));
+    }
+    catch (...) {
+      ros_sub_ = nullptr;
+      qWarning() << "Failed to create subscriber" <<topic;
+    }
   }
   QString getTopic(){
-    return QString::fromStdString(ros_sub_->get_topic_name());
+    if(ros_sub_)
+      return QString::fromStdString(ros_sub_->get_topic_name());
+    else
+      return QString::fromStdString("");
   }
   msg_T & msgBuffer(){return msg_buffer_;}
   void setCallback(std::function<void()> callback){
