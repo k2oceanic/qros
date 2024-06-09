@@ -165,13 +165,13 @@ ApplicationWindow {
             id: jointStatePublisher
             node: applicationNode
             Component.onCompleted: {
-                topic = "/joint_states"
+                topic = "/pt25_roll_cmd"
             }
 
-            jointNames: ["joint1", "joint2"]
-            positions: [0.0, 0.0]
-            velocities: [0.0, 0.0]
-            efforts: [0.0, 0.0]
+            jointNames: ["joint1"]
+            positions: [0.0]
+            velocities: [0.0]
+            efforts: [0.0]
         }
 
         // Joint State Subscriber
@@ -179,7 +179,7 @@ ApplicationWindow {
             id: jointStateSubscriber
             node: applicationNode
             Component.onCompleted: {
-                topic = "/joint_states"
+                topic = "/pt25_roll"
             }
 
             onJointStateChanged: {
@@ -209,29 +209,27 @@ ApplicationWindow {
         Row {
             TextField {
                 id: positionField1
-                placeholderText: "Position 1"
+                placeholderText: "Position"
                 onAccepted: jointStatePublisher.positions[0] = parseFloat(positionField1.text)
-            }
-            TextField {
-                id: positionField2
-                placeholderText: "Position 2"
-                onAccepted: jointStatePublisher.positions[1] = parseFloat(positionField2.text)
             }
         }
         Button {
             text: "Update Joint States"
             onClicked: {
-                jointStatePublisher.positions = [parseFloat(positionField1.text), parseFloat(positionField2.text)]
+                jointStatePublisher.positions = [parseFloat(positionField1.text)]
                 jointStatePublisher.publish() // Assuming there's a publish method to send the message
             }
         }
 
         TextField{
             id: syncLabel
-            text: syncStringSub.data
-            onTextChanged: {
+            property string textState: syncStringSub.data
+            onEditingFinished: {
                 syncStringPub.data = text
                 syncStringPub.publish()
+            }
+            onTextStateChanged: {
+                syncLabel.text = textState
             }
         }
     }
