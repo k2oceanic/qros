@@ -24,12 +24,24 @@ public:
 
   void subscribe(QString topic, int queue_size = 1, bool latched = false) {
     auto qos = latched ? rclcpp::QoS(rclcpp::KeepLast(queue_size)).transient_local() : rclcpp::QoS(queue_size);
-    ros_sub_ = ros_node_ptr_->template create_subscription<msg_T>(
+    if(topic == ""){
+      ros_sub_ = nullptr;
+      return;
+    }
+    try{
+      ros_sub_ = ros_node_ptr_->template create_subscription<msg_T>(
         topic.toStdString(), qos, std::bind(&QRosTypedSubscriber::rosCallback, this, std::placeholders::_1));
+    }
+    catch (...) {
+      ros_sub_ = nullptr;
+      qWarning() << "Failed to create subscriber" <<topic;
+    }
   }
-
-  QString getTopic() {
-    return QString::fromStdString(ros_sub_->get_topic_name());
+  QString getTopic(){
+    if(ros_sub_)
+      return QString::fromStdString(ros_sub_->get_topic_name());
+    else
+      return QString::fromStdString("");
   }
 
   msg_T & msgBuffer() { return msg_buffer_; }

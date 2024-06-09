@@ -19,7 +19,7 @@
 #include "qros_pose_stamped.h"
 #include "qros_joy.h"
 #include "qros_odometry.h"
-#include "qros_bool.h"
+#include "qros_primitives.h"
 #include "qros_twist_stamped.h"
 #include "qros_raw_packet.h"
 #include "qros_settings.h"
@@ -28,6 +28,7 @@
 #include "qros_wrench_stamped.h"
 #include "qros_thrust_stamped.h"
 #include "qros_range.h"
+#include "qros_imu.h"
 
 #define REGISTER_QML_TYPE(TYPE) \
   qmlRegisterType<TYPE>(QML_PACKAGE, QML_PACKAGE_VERSION_MAJOR, QML_PACKAGE_VERSION_MINOR, #TYPE); \

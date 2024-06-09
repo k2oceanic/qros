@@ -14,6 +14,10 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosFloat32Subscriber)
   REGISTER_QML_TYPE(QRosFloat32MultiArrayPublisher)
   REGISTER_QML_TYPE(QRosFloat32MultiArraySubscriber)
+  REGISTER_QML_TYPE(QRosIntPublisher)
+  REGISTER_QML_TYPE(QRosIntSubscriber)
+  REGISTER_QML_TYPE(QRosDoublePublisher)
+  REGISTER_QML_TYPE(QRosDoubleSubscriber)
 
   // sensor_msgs
   REGISTER_QML_TYPE(QRosTemperatureSubscriber)
@@ -22,6 +26,8 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosJoySubscriber)
   REGISTER_QML_TYPE(QRosJointStatePublisher)
   REGISTER_QML_TYPE(QRosJointStateSubscriber)
+  REGISTER_QML_TYPE(QRosImuPublisher)
+  REGISTER_QML_TYPE(QRosImuSubscriber)
 
   // geometry_msgs
   REGISTER_QML_TYPE(QRosPoseStampedPublisher)
@@ -51,6 +57,10 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosWrenchStampedPublisher)
   REGISTER_QML_TYPE(QRosWrenchStampedSubscriber)
   REGISTER_QML_TYPE(QRosRawAnalogSubscriber)
+
+
+
+
 }
 }
 QROS_NS_FOOT
