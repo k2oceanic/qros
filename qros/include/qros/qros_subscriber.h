@@ -123,7 +123,7 @@ protected:
   virtual QRosSubscriberInterface * interfacePtr() = 0;
 
   QString topic_;
-  int queue_size_ = 10;
+  int queue_size_ = 1;
   bool latched_ = false;
 };
 
