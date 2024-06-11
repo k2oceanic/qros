@@ -13,7 +13,7 @@
 #include "qros_valve_pack.h"
 #include "qros_temperature_subscriber.h"
 #include "qros_pressure_subscriber.h"
-#include "qros_diagnostic_status_subscriber.h"
+#include "qros_diagnostic_status.h"
 #include "qros_diagnostic_array_subscriber.h"
 #include "qros_joint_state.h"
 #include "qros_pose_stamped.h"
