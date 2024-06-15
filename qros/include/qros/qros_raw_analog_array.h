@@ -87,7 +87,8 @@ public:
   Q_PROPERTY(QVector<int> channelIds READ getChannelIds NOTIFY analogsChanged)
   Q_PROPERTY(QVector<double> scales READ getScales NOTIFY analogsChanged)
   Q_PROPERTY(QVector<double> proportionalValues READ getProportionalValues NOTIFY analogsChanged)
-  Q_PROPERTY(QVector<double> voltages READ getVoltages NOTIFY analogsChanged)
+  Q_PROPERTY(QVector<double> scaledValues READ getScaledValues NOTIFY analogsChanged)
+  Q_PROPERTY(QVector<uint8_t> types READ getTypes NOTIFY analogsChanged)
   Q_PROPERTY(QString frameId READ getFrameId NOTIFY analogsChanged)
 
 public slots:
@@ -115,12 +116,20 @@ public slots:
     return values;
   }
 
-  QVector<double> getVoltages() {
+  QVector<double> getScaledValues() {
     QVector<double> values;
     for (auto &analog : subscriber_.msgBuffer().analogs) {
       values.push_back(analog.proportional_value * analog.scale);
     }
     return values;
+  }
+
+  QVector<uint8_t> getTypes() {
+    QVector<uint8_t> types;
+    for (auto &analog : subscriber_.msgBuffer().analogs) {
+      types.push_back(analog.type);
+    }
+    return types;
   }
 
   QString getFrameId() {
@@ -129,7 +138,7 @@ public slots:
 
 signals:
   void analogsChanged();
-  void analogChanged(int channelId, double scale, double proportionalValue, double voltage);
+  void analogChanged(int channelId, double scale, double proportionalValue, double scaledValue, int type);
 
 protected:
   void onMsgReceived() override {
@@ -137,7 +146,8 @@ protected:
       emit analogChanged(analog.channel_id,
                          analog.scale,
                          analog.proportional_value,
-                         analog.scale * analog.proportional_value);
+                         analog.scale * analog.proportional_value,
+                         analog.type);
     }
     emit analogsChanged();
   }
