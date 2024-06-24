@@ -34,6 +34,8 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosPoseStampedSubscriber)
   REGISTER_QML_TYPE(QRosTwistStampedPublisher)
   REGISTER_QML_TYPE(QRosTwistStampedSubscriber)
+  REGISTER_QML_TYPE(QRosPointStampedPublisher)
+  REGISTER_QML_TYPE(QRosPointStampedSubscriber)
 
   // nav_msgs
   REGISTER_QML_TYPE(QRosOdometryPublisher)
