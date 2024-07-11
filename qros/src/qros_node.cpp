@@ -4,7 +4,9 @@ QROS_NS_HEAD
 
 QRosNode::QRosNode(QObject *parent)
     : QObject{parent}
-{}
+{
+  node_ptr_ = nullptr;
+}
 
 
 rclcpp::Node::SharedPtr QRosNode::getNodePtr() const

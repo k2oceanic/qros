@@ -61,7 +61,8 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosWrenchStampedSubscriber)
   REGISTER_QML_TYPE(QRosRawAnalogSubscriber)
 
-
+  // services
+  REGISTER_QML_TYPE(QRosTriggerServiceClient)
 
 
 }

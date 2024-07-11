@@ -232,5 +232,23 @@ ApplicationWindow {
                 syncLabel.text = textState
             }
         }
+
+        Button{
+            onClicked: trigService.callService()
+
+
+        }
+
+        Label{
+            text: trigService.respMessage
+        }
+
+        QRosTriggerServiceClient{
+            id: trigService
+            node: applicationNode
+            Component.onCompleted:{
+                serviceName= "/odysseus4k/nav/reset_map_frame"
+            }
+        }
     }
 }

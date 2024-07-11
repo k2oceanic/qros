@@ -30,6 +30,8 @@
 #include "qros_range.h"
 #include "qros_imu.h"
 #include "qros_point_stamped.h"
+#include "qros_service_client.h"
+#include "qros_trigger_service.h"
 
 #define REGISTER_QML_TYPE(TYPE) \
   qmlRegisterType<TYPE>(QML_PACKAGE, QML_PACKAGE_VERSION_MAJOR, QML_PACKAGE_VERSION_MINOR, #TYPE); \

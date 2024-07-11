@@ -31,9 +31,10 @@ int main(int argc, char *argv[])
 
   QQmlContext * rootContext = engine.rootContext();
 
+  rootContext->setContextProperty("applicationNode", &applicationNode);
+
   applicationNode.setNodePtr(ros_node);
 
-  rootContext->setContextProperty("applicationNode", &applicationNode);
 
   engine.load(url);
 

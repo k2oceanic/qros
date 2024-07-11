@@ -17,6 +17,7 @@ set(ROS_DEPENDS
     io_interfaces
     geometry_msgs
     propulsion_interfaces
+    std_srvs
   )
 
 set(EXTERNAL_DEPENDS
