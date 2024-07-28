@@ -2,11 +2,11 @@
 
 #include "qros_object.h"
 #include <QDebug>
+#include <QTimer>
 
 QROS_NS_HEAD
 
-
-class QRosSubscriberInterface {
+    class QRosSubscriberInterface {
 public:
   typedef std::shared_ptr<QRosSubscriberInterface> SharedPtr;
   virtual void setNode(QRosNode* node) = 0;
@@ -28,23 +28,24 @@ public:
       ros_sub_ = nullptr;
       return;
     }
-    try{
+    try {
       ros_sub_ = ros_node_ptr_->template create_subscription<msg_T>(
-        topic.toStdString(), qos, std::bind(&QRosTypedSubscriber::rosCallback, this, std::placeholders::_1));
+          topic.toStdString(), qos, std::bind(&QRosTypedSubscriber::rosCallback, this, std::placeholders::_1));
     }
     catch (...) {
       ros_sub_ = nullptr;
-      qWarning() << "Failed to create subscriber" <<topic;
+      qWarning() << "Failed to create subscriber" << topic;
     }
   }
-  QString getTopic(){
-    if(ros_sub_)
+
+  QString getTopic() {
+    if (ros_sub_)
       return QString::fromStdString(ros_sub_->get_topic_name());
     else
       return QString::fromStdString("");
   }
 
-  msg_T & msgBuffer() { return msg_buffer_; }
+  msg_T& msgBuffer() { return msg_buffer_; }
 
   void setCallback(std::function<void()> callback) {
     callback_ = callback;
@@ -68,6 +69,8 @@ public:
   Q_PROPERTY(QString topic READ getTopic WRITE setTopic NOTIFY topicChanged)
   Q_PROPERTY(int queueSize READ getQueueSize WRITE setQueueSize NOTIFY queueSizeChanged)
   Q_PROPERTY(bool latched READ isLatched WRITE setLatched NOTIFY latchedChanged)
+  Q_PROPERTY(int staleTimeout READ getStaleTimeout WRITE setStaleTimeout NOTIFY staleTimeoutChanged)
+  Q_PROPERTY(bool isStale READ isStale NOTIFY isStaleChanged)
 
 public slots:
   void setTopic(QString topic) {
@@ -77,7 +80,7 @@ public slots:
       interfacePtr()->subscribe(topic, queue_size_, latched_);
       emit topicChanged();
     } else {
-      qWarning() << "subscriber topic changed before node was set! " << topic;
+      qWarning() << "Subscriber topic changed before node was set! " << topic;
     }
   }
 
@@ -107,25 +110,67 @@ public slots:
     return latched_;
   }
 
+  void setStaleTimeout(int timeout) {
+    if (stale_timeout_ != timeout) {
+      stale_timeout_ = timeout;
+      emit staleTimeoutChanged();
+      resetStaleTimer();
+    }
+  }
+
+  int getStaleTimeout() const {
+    return stale_timeout_;
+  }
+
+  bool isStale() const {
+    return is_stale_;
+  }
+
 signals:
   void topicChanged();
   void queueSizeChanged();
   void latchedChanged();
+  void staleTimeoutChanged();
+  void isStaleChanged();
   void msgReceived();
 
 protected:
   virtual void handleMsg() {
     emit msgReceived();
     onMsgReceived();
+    resetStaleTimer();
   }
 
   virtual void onMsgReceived() = 0;
-  virtual QRosSubscriberInterface * interfacePtr() = 0;
+  virtual QRosSubscriberInterface* interfacePtr() = 0;
+
+  void resetStaleTimer() {
+    if (stale_timer_) {
+      stale_timer_->stop();
+      if(is_stale_){
+        is_stale_ = false;
+        emit isStaleChanged();
+      }
+    }
+    if (stale_timeout_ > 0) {
+      stale_timer_->start(stale_timeout_ * 1000);
+    }
+  }
 
   QString topic_;
   int queue_size_ = 1;
   bool latched_ = false;
-};
+  int stale_timeout_ = 0; // in seconds
+  bool is_stale_ = false;
+  QTimer* stale_timer_ = new QTimer(this);
 
+  QRosSubscriber() {
+    connect(stale_timer_, &QTimer::timeout, this, [this]() {
+      is_stale_ = true;
+      emit isStaleChanged();
+      stale_timer_->stop();
+    });
+  }
+};
 
 QROS_NS_FOOT
