@@ -69,7 +69,7 @@ public:
   Q_PROPERTY(QString topic READ getTopic WRITE setTopic NOTIFY topicChanged)
   Q_PROPERTY(int queueSize READ getQueueSize WRITE setQueueSize NOTIFY queueSizeChanged)
   Q_PROPERTY(bool latched READ isLatched WRITE setLatched NOTIFY latchedChanged)
-  Q_PROPERTY(int staleTimeout READ getStaleTimeout WRITE setStaleTimeout NOTIFY staleTimeoutChanged)
+  Q_PROPERTY(double staleTimeout READ getStaleTimeout WRITE setStaleTimeout NOTIFY staleTimeoutChanged)
   Q_PROPERTY(bool isStale READ isStale NOTIFY isStaleChanged)
 
 public slots:
@@ -110,7 +110,7 @@ public slots:
     return latched_;
   }
 
-  void setStaleTimeout(int timeout) {
+  void setStaleTimeout(double timeout) {
     if (stale_timeout_ != timeout) {
       stale_timeout_ = timeout;
       emit staleTimeoutChanged();
@@ -118,7 +118,7 @@ public slots:
     }
   }
 
-  int getStaleTimeout() const {
+  double getStaleTimeout() const {
     return stale_timeout_;
   }
 
@@ -153,14 +153,14 @@ protected:
       }
     }
     if (stale_timeout_ > 0) {
-      stale_timer_->start(stale_timeout_ * 1000);
+      stale_timer_->start(int(stale_timeout_ * 1000));
     }
   }
 
   QString topic_;
   int queue_size_ = 1;
   bool latched_ = false;
-  int stale_timeout_ = 0; // in seconds
+  double stale_timeout_ = 0; // in seconds
   bool is_stale_ = false;
   QTimer* stale_timer_ = new QTimer(this);
 
