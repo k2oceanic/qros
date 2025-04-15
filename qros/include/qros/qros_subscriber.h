@@ -4,6 +4,9 @@
 #include <QDebug>
 #include <QTimer>
 
+#include <QElapsedTimer> // Add this for timestamp tracking
+
+
 QROS_NS_HEAD
 
     class QRosSubscriberInterface {
@@ -114,7 +117,9 @@ public slots:
     if (stale_timeout_ != timeout) {
       stale_timeout_ = timeout;
       emit staleTimeoutChanged();
-      resetStaleTimer();
+
+      // Configure check timer based on new timeout
+      configureStaleTimer();
     }
   }
 
@@ -138,22 +143,51 @@ protected:
   virtual void handleMsg() {
     emit msgReceived();
     onMsgReceived();
-    resetStaleTimer();
+
+    // Record the timestamp of the last message
+    last_msg_timestamp_.restart();
+
+    // Clear stale flag if it was set
+    if (is_stale_) {
+      is_stale_ = false;
+      emit isStaleChanged();
+    }
   }
 
   virtual void onMsgReceived() = 0;
   virtual QRosSubscriberInterface* interfacePtr() = 0;
 
-  void resetStaleTimer() {
-    if (stale_timer_) {
-      stale_timer_->stop();
-      if(is_stale_){
-        is_stale_ = false;
-        emit isStaleChanged();
+  // Replaced resetStaleTimer with this more reliable approach
+  void configureStaleTimer() {
+    // Stop existing timer
+    if (stale_check_timer_) {
+      stale_check_timer_->stop();
+    }
+
+    // Only start timer if we have a valid timeout
+    if (stale_timeout_ > 0) {
+      // Use a shorter interval to check more frequently
+      int check_interval = qMin(int(stale_timeout_ * 250), 100); // Check 4 times per timeout period, but max 100ms
+      stale_check_timer_->start(check_interval);
+
+      // Initialize or restart the last message timestamp tracker
+      if (!last_msg_timestamp_.isValid()) {
+        last_msg_timestamp_.start();
       }
     }
-    if (stale_timeout_ > 0) {
-      stale_timer_->start(int(stale_timeout_ * 1000));
+  }
+
+  void checkStaleState() {
+    // Only check if we have a valid timeout and the timer is running
+    if (stale_timeout_ > 0 && last_msg_timestamp_.isValid()) {
+      qint64 elapsed = last_msg_timestamp_.elapsed();
+      bool should_be_stale = (elapsed > int(stale_timeout_ * 1000));
+
+      // Only update and emit signal if the state changes
+      if (should_be_stale != is_stale_) {
+        is_stale_ = should_be_stale;
+        emit isStaleChanged();
+      }
     }
   }
 
@@ -162,14 +196,15 @@ protected:
   bool latched_ = false;
   double stale_timeout_ = 0; // in seconds
   bool is_stale_ = false;
-  QTimer* stale_timer_ = new QTimer(this);
+  QElapsedTimer last_msg_timestamp_; // To track when the last message was received
+  QTimer* stale_check_timer_ = new QTimer(this); // Timer to periodically check stale state
 
   QRosSubscriber() {
-    connect(stale_timer_, &QTimer::timeout, this, [this]() {
-      is_stale_ = true;
-      emit isStaleChanged();
-      stale_timer_->stop();
-    });
+    // Connect the timer to the check function
+    connect(stale_check_timer_, &QTimer::timeout, this, &QRosSubscriber::checkStaleState);
+
+    // Start the message timestamp tracker
+    last_msg_timestamp_.start();
   }
 };
 
