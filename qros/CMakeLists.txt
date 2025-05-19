@@ -19,24 +19,19 @@ set(ROS_DEPENDS
     propulsion_interfaces
     std_srvs
   )
-
 set(EXTERNAL_DEPENDS
-    Qt5Widgets
-    Qt5PrintSupport
-    Qt5Qml
-    Qt5Quick
-    Qt5Gui
-    Qt5QuickControls2
-  )
+  Qt6
+  Qt6Core
+  Qt6Qml
+  Qt6Quick
+
+)
 
 set(EXTERNAL_DEPENDS_LIB
-    Qt5::Widgets
-    Qt5::PrintSupport
-    Qt5::Core
-    Qt5::Qml
-    Qt5::Quick
-    Qt5::QuickControls2
-  )
+  Qt6::Core
+  Qt6::Gui
+  Qt6::Quick
+)
 
 
 get_filename_component(PACKAGE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
@@ -102,14 +97,6 @@ message("Adding ${PROJECT_NAME} QRC files: "  )
 foreach(source ${QRC})
     message("  - " ${source})
 endforeach(source)
-
-message("Adding ${PROJECT_NAME} UI files: "  )
-foreach(source ${UI})
-    message("  - " ${source})
-endforeach(source)
-
-#make them into headers
-qt5_wrap_ui (UI_HDRS  ${UI})
 
 message("Generating ${PROJECT_NAME} UI Headers: " )
 foreach(source ${UI_HDRS})

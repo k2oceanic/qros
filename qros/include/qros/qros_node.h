@@ -45,6 +45,10 @@ public slots:
   void getExternalParametersAsync(const QString &node_name, const QStringList &param_names, int wait_ms = 1000);
   void getExternalParameters(const QString &node_name, const QStringList &param_names, int wait_ms = 1000);
   void listExternalParametersAsync(const QString &node_name, int wait_ms = 1000);
+  int  countSubscribers(const QString &topic);
+  int  countPublishers(const QString &topic);
+  QString getName();
+
 
 signals:
   void parametersChanged();
@@ -52,7 +56,7 @@ signals:
   void parametersGetResult(bool success, QString node_name, QVariantMap params, QString error = "");
   void parametersListResult(bool success, QString node_name, QStringList param_names, QString error = "");
 private:
-  rclcpp::Node::SharedPtr node_ptr_;
+  rclcpp::Node::SharedPtr node_ptr_ =nullptr;
   QTimer *ros_timer_;
   QVariantMap parameters_;
 };

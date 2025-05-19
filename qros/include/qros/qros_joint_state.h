@@ -9,7 +9,7 @@
 
 QROS_NS_HEAD
 
-class QRosJointStatePublisher : public QRosPublisher {
+    class QRosJointStatePublisher : public QRosPublisher {
   Q_OBJECT
 public:
   Q_PROPERTY(QVector<QString> jointNames READ getJointNames WRITE setJointNames NOTIFY jointStateChanged)
@@ -35,26 +35,26 @@ public slots:
   }
 
   QVector<double> getPositions() {
-    return QVector<double>::fromStdVector(publisher_.msgBuffer().position);
+    return QVector<double>(publisher_.msgBuffer().position.begin(), publisher_.msgBuffer().position.end());
   }
   void setPositions(const QVector<double>& positions) {
-    publisher_.msgBuffer().position = positions.toStdVector();
+    publisher_.msgBuffer().position = std::vector<double>(positions.begin(), positions.end());
     emit jointStateChanged();
   }
 
   QVector<double> getVelocities() {
-    return QVector<double>::fromStdVector(publisher_.msgBuffer().velocity);
+    return QVector<double>(publisher_.msgBuffer().velocity.begin(), publisher_.msgBuffer().velocity.end());
   }
   void setVelocities(const QVector<double>& velocities) {
-    publisher_.msgBuffer().velocity = velocities.toStdVector();
+    publisher_.msgBuffer().velocity = std::vector<double>(velocities.begin(), velocities.end());
     emit jointStateChanged();
   }
 
   QVector<double> getEfforts() {
-    return QVector<double>::fromStdVector(publisher_.msgBuffer().effort);
+    return QVector<double>(publisher_.msgBuffer().effort.begin(), publisher_.msgBuffer().effort.end());
   }
   void setEfforts(const QVector<double>& efforts) {
-    publisher_.msgBuffer().effort = efforts.toStdVector();
+    publisher_.msgBuffer().effort = std::vector<double>(efforts.begin(), efforts.end());
     emit jointStateChanged();
   }
 
@@ -97,15 +97,15 @@ public slots:
   }
 
   QVector<double> getPositions() {
-    return QVector<double>::fromStdVector(subscriber_.msgBuffer().position);
+    return QVector<double>(subscriber_.msgBuffer().position.begin(), subscriber_.msgBuffer().position.end());
   }
 
   QVector<double> getVelocities() {
-    return QVector<double>::fromStdVector(subscriber_.msgBuffer().velocity);
+    return QVector<double>(subscriber_.msgBuffer().velocity.begin(), subscriber_.msgBuffer().velocity.end());
   }
 
   QVector<double> getEfforts() {
-    return QVector<double>::fromStdVector(subscriber_.msgBuffer().effort);
+    return QVector<double>(subscriber_.msgBuffer().effort.begin(), subscriber_.msgBuffer().effort.end());
   }
 
   QDateTime getTimestamp() {
