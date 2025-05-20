@@ -28,6 +28,8 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosJointStateSubscriber)
   REGISTER_QML_TYPE(QRosImuPublisher)
   REGISTER_QML_TYPE(QRosImuSubscriber)
+  REGISTER_QML_TYPE(QRosNavSatFixPublisher);
+  REGISTER_QML_TYPE(QRosNavSatFixSubscriber);
 
   // geometry_msgs
   REGISTER_QML_TYPE(QRosPoseStampedPublisher)
