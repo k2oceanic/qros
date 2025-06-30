@@ -43,6 +43,10 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosOdometryPublisher)
   REGISTER_QML_TYPE(QRosOdometrySubscriber)
 
+  // geometry_msgs
+  REGISTER_QML_TYPE(QRosGeoPointPublisher)
+  REGISTER_QML_TYPE(QRosGeoPointSubscriber)
+
   // diagnostic_msgs
   REGISTER_QML_TYPE(QRosDiagnosticStatusSubscriber)
   REGISTER_QML_TYPE(QRosDiagnosticStatusPublisher)

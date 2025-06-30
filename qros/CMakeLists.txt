@@ -18,6 +18,7 @@ set(ROS_DEPENDS
     geometry_msgs
     propulsion_interfaces
     std_srvs
+    geographic_msgs
   )
 set(EXTERNAL_DEPENDS
   Qt6

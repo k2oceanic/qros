@@ -18,7 +18,7 @@ ApplicationWindow {
         applicationNode.declareParameter("vector", [1, 2, 3, 4, 5]);
         for (var key in applicationNode.parameters) {
            console.log("Key:", key, "Value:", applicationNode.parameters[key]);
-       }
+        }
     }
 
     QRosStringSubscriber{
