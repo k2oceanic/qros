@@ -14,11 +14,11 @@
   <depend> std_msgs </depend>
   <depend> sensor_msgs </depend>
   <depend> diagnostic_msgs </depend>
-  <depend> hydraulic_interfaces </depend>
-  <depend> io_interfaces </depend>
+  <!--<depend> hydraulic_interfaces </depend>
+  <depend> io_interfaces </depend>-->
   <depend> nav_msgs </depend>
   <depend> geometry_msgs </depend>
-  <depend> propulsion_interfaces </depend>
+  <!--<depend> propulsion_interfaces </depend>-->
   <depend> std_srvs </depend>
   <depend> geographic_msgs </depend>
   <depend> tf2 </depend>

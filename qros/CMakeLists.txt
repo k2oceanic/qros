@@ -11,12 +11,11 @@ set(ROS_DEPENDS
     sensor_msgs
     diagnostic_msgs
     qros_interfaces
-    hydraulic_interfaces
-    io_interfaces
+    #hydraulic_interfaces
+    #io_interfaces
     nav_msgs
-    io_interfaces
     geometry_msgs
-    propulsion_interfaces
+    #propulsion_interfaces
     std_srvs
     geographic_msgs
     tf2
