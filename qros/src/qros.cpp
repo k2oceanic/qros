@@ -70,6 +70,9 @@ void registerQmlTypes(){
   // services
   REGISTER_QML_TYPE(QRosTriggerServiceClient)
 
+  // tf2
+  REGISTER_QML_TYPE(QRosTfBuffer) // QML: QRosTfBuffer { node: applicationNode }
+  REGISTER_QML_TYPE(QRosTransformStamped)
 
 }
 }
