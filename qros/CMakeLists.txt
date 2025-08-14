@@ -19,6 +19,10 @@ set(ROS_DEPENDS
     propulsion_interfaces
     std_srvs
     geographic_msgs
+    tf2
+    tf2_ros
+    tf2_geometry_msgs
+    tf2_sensor_msgs
   )
 set(EXTERNAL_DEPENDS
   Qt6
