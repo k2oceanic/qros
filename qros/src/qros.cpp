@@ -16,6 +16,8 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosFloat32MultiArraySubscriber)
   REGISTER_QML_TYPE(QRosIntPublisher)
   REGISTER_QML_TYPE(QRosIntSubscriber)
+  REGISTER_QML_TYPE(QRosInt64Publisher)
+  REGISTER_QML_TYPE(QRosInt64Subscriber)
   REGISTER_QML_TYPE(QRosDoublePublisher)
   REGISTER_QML_TYPE(QRosDoubleSubscriber)
 

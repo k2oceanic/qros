@@ -4,6 +4,7 @@
 #include "qros_subscriber.h"
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/int32.hpp>
+#include <std_msgs/msg/int64.hpp>
 #include <std_msgs/msg/float64.hpp>
 #include <QString>
 
@@ -94,6 +95,50 @@ private:
   QRosSubscriberInterface* interfacePtr() { return &subscriber_; }
   QRosTypedSubscriber<std_msgs::msg::Int32> subscriber_;
 };
+
+// Int64 Publisher
+class QRosInt64Publisher : public QRosPublisher {
+  Q_OBJECT
+public:
+  Q_PROPERTY(qint64 data READ getData WRITE setData NOTIFY dataChanged)
+public slots:
+  qint64 getData() {
+    return publisher_.msgBuffer().data;
+  }
+  void setData(qint64 data) {
+    publisher_.msgBuffer().data = data;
+    emit dataChanged();
+  }
+signals:
+  void dataChanged();
+
+protected:
+  QRosPublisherInterface* interfacePtr() override { return &publisher_; }
+  QRosTypedPublisher<std_msgs::msg::Int64> publisher_;
+};
+
+// Int64 Subscriber
+class QRosInt64Subscriber : public QRosSubscriber {
+  Q_OBJECT
+public:
+  Q_PROPERTY(qint64 data READ getData NOTIFY dataChanged)
+public slots:
+  qint64 getData() {
+    return subscriber_.msgBuffer().data;
+  }
+signals:
+  void dataChanged();
+
+protected:
+  void onMsgReceived() override {
+    emit dataChanged();
+  }
+
+private:
+  QRosSubscriberInterface* interfacePtr() override { return &subscriber_; }
+  QRosTypedSubscriber<std_msgs::msg::Int64> subscriber_;
+};
+
 
 // Double Publisher
 class QRosDoublePublisher : public QRosPublisher {
