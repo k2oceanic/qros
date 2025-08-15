@@ -11,11 +11,11 @@ set(ROS_DEPENDS
     sensor_msgs
     diagnostic_msgs
     qros_interfaces
-    #hydraulic_interfaces
-    #io_interfaces
+    hydraulic_interfaces
+    io_interfaces
     nav_msgs
     geometry_msgs
-    #propulsion_interfaces
+    propulsion_interfaces
     std_srvs
     geographic_msgs
     tf2
@@ -127,7 +127,7 @@ foreach(NODE_FILE ${NODES})
 endforeach(NODE_FILE)
 
 
-message("  Installing: " ${EXECUTABLES})
+message("  Installing: ")
 foreach(EXECUTABLE ${EXECUTABLES})
     message("  - " ${EXECUTABLE})
 endforeach(EXECUTABLE)
@@ -135,6 +135,14 @@ endforeach(EXECUTABLE)
 install(TARGETS
   ${EXECUTABLES}
   DESTINATION lib/${PROJECT_NAME}/
+)
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}/
+)
+install(DIRECTORY
+  config
+  DESTINATION share/${PROJECT_NAME}/
 )
 
 #############
