@@ -56,6 +56,39 @@ public slots:
     emit valvePackChanged();
   }
 
+  void setId(int index, int valve_id) {
+    if (index >= 0 && index < publisher_.msgBuffer().valves.size()) {
+        publisher_.msgBuffer().valves[index].valve_id = valve_id;
+    }
+  }
+
+  int getId(int index) {
+      if (index >= 0 && index < publisher_.msgBuffer().valves.size()) {
+          return publisher_.msgBuffer().valves[index].valve_id;
+      }
+      return -1;  // Invalid index
+  }
+  bool setValveById(int valve_id, double value) {
+    auto& valves = publisher_.msgBuffer().valves;
+    for (size_t i = 0; i < valves.size(); i++) {
+      if (valves[i].valve_id == valve_id) {
+        valves[i].set_point = value;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  double getValveById(int valve_id) {
+    auto& valves = publisher_.msgBuffer().valves;
+    for (size_t i = 0; i < valves.size(); i++) {
+      if (valves[i].valve_id == valve_id) {
+        return valves[i].set_point;
+      }
+    }
+    return 0.0;  // Return 0.0 if valve_id not found
+  }
+
   QString getFrameId() {
     return QString::fromStdString(publisher_.msgBuffer().header.frame_id);
   }
