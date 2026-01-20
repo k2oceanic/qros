@@ -1,4 +1,4 @@
-#include "qros.h"
+#include "qros/qros.h"
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>

@@ -1,5 +1,5 @@
-#include "qros_tf_buffer.h"
-#include "qros_node.h"
+#include "qros/qros_tf_buffer.h"
+#include "qros/qros_node.h"
 
 #include <QQmlEngine>
 #include <rclcpp/rclcpp.hpp>
