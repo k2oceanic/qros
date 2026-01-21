@@ -1,4 +1,4 @@
-#include "parameter_proxy_node.hpp"
+#include "qros/parameter_proxy_node.hpp"
 
 ParameterProxyNode::ParameterProxyNode() : Node("parameter_proxy_node")
 {
