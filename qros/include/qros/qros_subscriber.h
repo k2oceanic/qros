@@ -26,20 +26,34 @@ public:
   }
 
   void subscribe(QString topic, int queue_size = 1, bool latched = false) {
-    auto qos = latched ? rclcpp::QoS(rclcpp::KeepLast(queue_size)).transient_local() : rclcpp::QoS(queue_size);
-    if(topic == ""){
-      ros_sub_ = nullptr;
+    rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(queue_size));
+
+    if (latched) {
+      qos.transient_local();
+      // Optional (often desired for latched/state):
+      qos.reliable();
+    } else {
+      qos.best_effort();          // <-- key change for GUI streams
+      qos.durability_volatile();  // explicit
+    }
+
+    if (topic.isEmpty()) {
+      ros_sub_.reset();
       return;
     }
+
     try {
       ros_sub_ = ros_node_ptr_->template create_subscription<msg_T>(
-          topic.toStdString(), qos, std::bind(&QRosTypedSubscriber::rosCallback, this, std::placeholders::_1));
-    }
-    catch (...) {
-      ros_sub_ = nullptr;
+          topic.toStdString(),
+          qos,
+          std::bind(&QRosTypedSubscriber::rosCallback, this, std::placeholders::_1)
+          );
+    } catch (...) {
+      ros_sub_.reset();
       qWarning() << "Failed to create subscriber" << topic;
     }
   }
+
 
   QString getTopic() {
     if (ros_sub_)
