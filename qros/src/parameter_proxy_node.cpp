@@ -23,7 +23,12 @@ ParameterProxyNode::ParameterProxyNode() : Node("parameter_proxy_node")
 
   // Wait for service
   while (!list_client_->wait_for_service(1s)) {
-    RCLCPP_INFO(this->get_logger(), "Waiting for %s to be available...", list_client_->get_service_name());
+    if (!rclcpp::ok()) {
+      RCLCPP_INFO(this->get_logger(), "Interrupted while waiting for service");
+      return;
+    }
+    RCLCPP_INFO(this->get_logger(), "Waiting for %s to be available...",
+                list_client_->get_service_name());
   }
 
   fetch_and_bind(target_node, parameter_filter);
