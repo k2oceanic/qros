@@ -1,10 +1,10 @@
 #pragma once
-
 #include "qros_subscriber.h"
 #include "qros_publisher.h"
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <QString>
 #include <QDateTime>
+#include <QVariantList>
 
 QROS_NS_HEAD
 
@@ -15,6 +15,9 @@ public:
   Q_PROPERTY(double longitude READ getLongitude WRITE setLongitude NOTIFY fixChanged)
   Q_PROPERTY(double altitude READ getAltitude WRITE setAltitude NOTIFY fixChanged)
   Q_PROPERTY(int status READ getStatus WRITE setStatus NOTIFY fixChanged)
+  Q_PROPERTY(int service READ getService WRITE setService NOTIFY fixChanged)
+  Q_PROPERTY(QVariantList covariance READ getCovariance WRITE setCovariance NOTIFY fixChanged)
+  Q_PROPERTY(int covarianceType READ getCovarianceType WRITE setCovarianceType NOTIFY fixChanged)
   Q_PROPERTY(QString frameId READ getFrameId WRITE setFrameId NOTIFY fixChanged)
   Q_PROPERTY(QDateTime timestamp READ getTimestamp WRITE setTimestamp NOTIFY fixChanged)
 
@@ -22,7 +25,6 @@ public slots:
   double getLatitude() {
     return publisher_.msgBuffer().latitude;
   }
-
   void setLatitude(double lat) {
     publisher_.msgBuffer().latitude = lat;
     emit fixChanged();
@@ -31,7 +33,6 @@ public slots:
   double getLongitude() {
     return publisher_.msgBuffer().longitude;
   }
-
   void setLongitude(double lon) {
     publisher_.msgBuffer().longitude = lon;
     emit fixChanged();
@@ -40,7 +41,6 @@ public slots:
   double getAltitude() {
     return publisher_.msgBuffer().altitude;
   }
-
   void setAltitude(double alt) {
     publisher_.msgBuffer().altitude = alt;
     emit fixChanged();
@@ -49,16 +49,46 @@ public slots:
   int getStatus() {
     return publisher_.msgBuffer().status.status;
   }
-
   void setStatus(int status) {
     publisher_.msgBuffer().status.status = status;
+    emit fixChanged();
+  }
+
+  int getService() {
+    return publisher_.msgBuffer().status.service;
+  }
+  void setService(int service) {
+    publisher_.msgBuffer().status.service = service;
+    emit fixChanged();
+  }
+
+  QVariantList getCovariance() {
+    QVariantList list;
+    const auto& cov = publisher_.msgBuffer().position_covariance;
+    for (size_t i = 0; i < 9; ++i) {
+      list.append(cov[i]);
+    }
+    return list;
+  }
+  void setCovariance(QVariantList cov) {
+    auto& msgCov = publisher_.msgBuffer().position_covariance;
+    for (size_t i = 0; i < 9 && i < static_cast<size_t>(cov.size()); ++i) {
+      msgCov[i] = cov[i].toDouble();
+    }
+    emit fixChanged();
+  }
+
+  int getCovarianceType() {
+    return publisher_.msgBuffer().position_covariance_type;
+  }
+  void setCovarianceType(int type) {
+    publisher_.msgBuffer().position_covariance_type = type;
     emit fixChanged();
   }
 
   QString getFrameId() {
     return QString::fromStdString(publisher_.msgBuffer().header.frame_id);
   }
-
   void setFrameId(QString frameId) {
     publisher_.msgBuffer().header.frame_id = frameId.toStdString();
     emit fixChanged();
@@ -69,7 +99,6 @@ public slots:
                         static_cast<qint64>(publisher_.msgBuffer().header.stamp.nanosec) / 1000000LL;
     return QDateTime::fromMSecsSinceEpoch(totalMSecs);
   }
-
   void setTimestamp(QDateTime timestamp) {
     publisher_.msgBuffer().header.stamp.sec = timestamp.toSecsSinceEpoch();
     publisher_.msgBuffer().header.stamp.nanosec = (timestamp.toMSecsSinceEpoch() % 1000) * 1000000;
@@ -84,7 +113,6 @@ protected:
   QRosTypedPublisher<sensor_msgs::msg::NavSatFix> publisher_;
 };
 
-
 class QRosNavSatFixSubscriber : public QRosSubscriber {
   Q_OBJECT
 public:
@@ -92,6 +120,9 @@ public:
   Q_PROPERTY(double longitude READ getLongitude NOTIFY fixChanged)
   Q_PROPERTY(double altitude READ getAltitude NOTIFY fixChanged)
   Q_PROPERTY(int status READ getStatus NOTIFY fixChanged)
+  Q_PROPERTY(int service READ getService NOTIFY fixChanged)
+  Q_PROPERTY(QVariantList covariance READ getCovariance NOTIFY fixChanged)
+  Q_PROPERTY(int covarianceType READ getCovarianceType NOTIFY fixChanged)
   Q_PROPERTY(QString frameId READ getFrameId NOTIFY fixChanged)
   Q_PROPERTY(QDateTime timestamp READ getTimestamp NOTIFY fixChanged)
 
@@ -110,6 +141,23 @@ public slots:
 
   int getStatus() {
     return subscriber_.msgBuffer().status.status;
+  }
+
+  int getService() {
+    return subscriber_.msgBuffer().status.service;
+  }
+
+  QVariantList getCovariance() {
+    QVariantList list;
+    const auto& cov = subscriber_.msgBuffer().position_covariance;
+    for (size_t i = 0; i < 9; ++i) {
+      list.append(cov[i]);
+    }
+    return list;
+  }
+
+  int getCovarianceType() {
+    return subscriber_.msgBuffer().position_covariance_type;
   }
 
   QString getFrameId() {

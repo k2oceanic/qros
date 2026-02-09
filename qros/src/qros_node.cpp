@@ -22,6 +22,7 @@ rclcpp::Node::SharedPtr QRosNode::getNodePtr() const
 void QRosNode::setNodePtr(const rclcpp::Node::SharedPtr &newNode_ptr)
 {
   node_ptr_ = newNode_ptr;
+  emit nodeChanged();
 }
 
 rclcpp::ParameterValue QRosNode::paramValueFromQVariant(const QVariant &value)

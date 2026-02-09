@@ -52,6 +52,7 @@ public slots:
 
 signals:
   void parametersChanged();
+  void nodeChanged();
   void parameterSetResult(bool result, QString node_name, QString param_name);
   void parametersGetResult(bool success, QString node_name, QVariantMap params, QString error = "");
   void parametersListResult(bool success, QString node_name, QStringList param_names, QString error = "");
