@@ -65,6 +65,8 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosRangePublisher)
   REGISTER_QML_TYPE(QRosThrustStampedSubscriber)
   REGISTER_QML_TYPE(QRosThrustStampedPublisher)
+  REGISTER_QML_TYPE(QRosThrustArraySubscriber)
+  REGISTER_QML_TYPE(QRosThrustArrayPublisher)
   REGISTER_QML_TYPE(QRosWrenchStampedPublisher)
   REGISTER_QML_TYPE(QRosWrenchStampedSubscriber)
   REGISTER_QML_TYPE(QRosRawAnalogSubscriber)

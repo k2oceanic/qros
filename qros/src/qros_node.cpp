@@ -108,8 +108,11 @@ QStringList QRosNode::getTopicsOfType(QString topic_type)
 
 void QRosNode::declareParameter(const QString &param_name, const QVariant &default_value)
 {
-  auto param_value =  paramValueFromQVariant(default_value);
-  node_ptr_->declare_parameter(param_name.toStdString(), param_value);
+  const std::string name = param_name.toStdString();
+  if (!node_ptr_->has_parameter(name)) {
+    auto param_value = paramValueFromQVariant(default_value);
+    node_ptr_->declare_parameter(name, param_value);
+  }
   updateParameters();
 }
 

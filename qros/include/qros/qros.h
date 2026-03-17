@@ -27,6 +27,7 @@
 #include "qros_raw_analog_array.h"
 #include "qros_wrench_stamped.h"
 #include "qros_thrust_stamped.h"
+#include "qros_thrust_array.h"
 #include "qros_range.h"
 #include "qros_imu.h"
 #include "qros_point_stamped.h"
