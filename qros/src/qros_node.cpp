@@ -1,4 +1,4 @@
-#include "qros_node.h"
+#include "qros/qros_node.h"
 
 QROS_NS_HEAD
 
@@ -22,6 +22,7 @@ rclcpp::Node::SharedPtr QRosNode::getNodePtr() const
 void QRosNode::setNodePtr(const rclcpp::Node::SharedPtr &newNode_ptr)
 {
   node_ptr_ = newNode_ptr;
+  emit nodeChanged();
 }
 
 rclcpp::ParameterValue QRosNode::paramValueFromQVariant(const QVariant &value)
@@ -278,31 +279,46 @@ void QRosNode::listExternalParametersAsync(const QString &node_name, int wait_ms
             RCLCPP_ERROR(node_ptr_->get_logger(), "Exception listing parameters: %s", e.what());
             emit parametersListResult(false, node_name, {}, QString::fromStdString(e.what()));
         }
-    }).detach();
+  }).detach();
 }
 
-QVariant QRosNode::paramValueToQVariant(const rclcpp::Parameter &param) {
-    switch (param.get_type()) {
-        case rclcpp::ParameterType::PARAMETER_BOOL:
-            return QVariant(param.as_bool());
-        case rclcpp::ParameterType::PARAMETER_INTEGER:
-            return QVariant(qlonglong(param.as_int()));
-        case rclcpp::ParameterType::PARAMETER_DOUBLE:
-            return QVariant(param.as_double());
-        case rclcpp::ParameterType::PARAMETER_STRING:
-            return QVariant(QString::fromStdString(param.as_string()));
-        case rclcpp::ParameterType::PARAMETER_BOOL_ARRAY:
-        case rclcpp::ParameterType::PARAMETER_INTEGER_ARRAY:
-        case rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY:
-        case rclcpp::ParameterType::PARAMETER_STRING_ARRAY:
-            return arrayToVariantList(param);
-        case rclcpp::ParameterType::PARAMETER_NOT_SET:
-            RCLCPP_ERROR(node_ptr_->get_logger(), "Parameter not set");
-            break;
-        default:
-            RCLCPP_ERROR(node_ptr_->get_logger(), "Unhandled parameter array type: %s ",param.get_type_name().c_str());
-            break;
-    }
+int QRosNode::countSubscribers(const QString &topic){
+  return node_ptr_->count_subscribers(topic.toStdString());
+}
+
+int QRosNode::countPublishers(const QString &topic){
+  return node_ptr_->count_publishers(topic.toStdString());
+}
+
+QString QRosNode::getName(){
+  QString::fromStdString(node_ptr_->get_name());
+}
+
+QVariant QRosNode::paramValueToQVariant(const rclcpp::Parameter &param)
+{
+  switch (param.get_type()) {
+  case rclcpp::ParameterType::PARAMETER_BOOL:
+    return QVariant(param.as_bool());
+  case rclcpp::ParameterType::PARAMETER_INTEGER:
+    return QVariant(qlonglong(param.as_int()));
+  case rclcpp::ParameterType::PARAMETER_DOUBLE:
+    return QVariant(param.as_double());
+  case rclcpp::ParameterType::PARAMETER_STRING:
+    return QVariant(QString::fromStdString(param.as_string()));
+  case rclcpp::ParameterType::PARAMETER_BOOL_ARRAY:
+  case rclcpp::ParameterType::PARAMETER_INTEGER_ARRAY:
+  case rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY:
+  case rclcpp::ParameterType::PARAMETER_STRING_ARRAY:
+    return arrayToVariantList(param);
+  case rclcpp::ParameterType::PARAMETER_NOT_SET:
+    RCLCPP_ERROR(node_ptr_->get_logger(), "Parameter not set");
+    break;
+  default:
+    RCLCPP_ERROR(node_ptr_->get_logger(),
+                 "Unhandled parameter array type: %s ",
+                 param.get_type_name().c_str());
+    break;
+  }
 }
 
 QVariant QRosNode::arrayToVariantList(const rclcpp::Parameter &param) {

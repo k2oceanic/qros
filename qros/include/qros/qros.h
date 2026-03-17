@@ -32,6 +32,11 @@
 #include "qros_point_stamped.h"
 #include "qros_service_client.h"
 #include "qros_trigger_service.h"
+#include "qros_navsat_fix.h"
+#include "qros_geo_point.h"
+
+#include "qros_tf_buffer.h"             // QRosTfBuffer
+#include "qros_transform_stamped.h"     // QRosTransformStamped
 
 #define REGISTER_QML_TYPE(TYPE) \
   qmlRegisterType<TYPE>(QML_PACKAGE, QML_PACKAGE_VERSION_MAJOR, QML_PACKAGE_VERSION_MINOR, #TYPE); \

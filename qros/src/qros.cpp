@@ -1,4 +1,4 @@
-#include "qros.h"
+#include "qros/qros.h"
 
 QROS_NS_HEAD
 namespace qros {
@@ -16,6 +16,8 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosFloat32MultiArraySubscriber)
   REGISTER_QML_TYPE(QRosIntPublisher)
   REGISTER_QML_TYPE(QRosIntSubscriber)
+  REGISTER_QML_TYPE(QRosInt64Publisher)
+  REGISTER_QML_TYPE(QRosInt64Subscriber)
   REGISTER_QML_TYPE(QRosDoublePublisher)
   REGISTER_QML_TYPE(QRosDoubleSubscriber)
 
@@ -28,6 +30,8 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosJointStateSubscriber)
   REGISTER_QML_TYPE(QRosImuPublisher)
   REGISTER_QML_TYPE(QRosImuSubscriber)
+  REGISTER_QML_TYPE(QRosNavSatFixPublisher);
+  REGISTER_QML_TYPE(QRosNavSatFixSubscriber);
 
   // geometry_msgs
   REGISTER_QML_TYPE(QRosPoseStampedPublisher)
@@ -40,6 +44,10 @@ void registerQmlTypes(){
   // nav_msgs
   REGISTER_QML_TYPE(QRosOdometryPublisher)
   REGISTER_QML_TYPE(QRosOdometrySubscriber)
+
+  // geometry_msgs
+  REGISTER_QML_TYPE(QRosGeoPointPublisher)
+  REGISTER_QML_TYPE(QRosGeoPointSubscriber)
 
   // diagnostic_msgs
   REGISTER_QML_TYPE(QRosDiagnosticStatusSubscriber)
@@ -64,6 +72,9 @@ void registerQmlTypes(){
   // services
   REGISTER_QML_TYPE(QRosTriggerServiceClient)
 
+  // tf2
+  REGISTER_QML_TYPE(QRosTfBuffer) // QML: QRosTfBuffer { node: applicationNode }
+  REGISTER_QML_TYPE(QRosTransformStamped)
 
 }
 }

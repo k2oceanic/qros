@@ -9,7 +9,7 @@
 
 QROS_NS_HEAD
 
-class QRosJoyPublisher : public QRosPublisher {
+    class QRosJoyPublisher : public QRosPublisher {
   Q_OBJECT
 public:
   Q_PROPERTY(QVector<float> axes READ getAxes WRITE setAxes NOTIFY joyChanged)
@@ -18,36 +18,40 @@ public:
   Q_PROPERTY(QDateTime timestamp READ getTimestamp WRITE setTimestamp NOTIFY joyChanged)
 
 public slots:
-  void resizeAxes(int size){
+  void resizeAxes(int size) {
     publisher_.msgBuffer().axes.resize(size);
   }
+
   QVector<float> getAxes() {
-    auto axes = QVector<float>::fromStdVector(publisher_.msgBuffer().axes);
-    return axes;
+    return QVector<float>(publisher_.msgBuffer().axes.begin(), publisher_.msgBuffer().axes.end());
   }
-  void setAxes(QVector<float> axes) {
-    publisher_.msgBuffer().axes = axes.toStdVector();
+
+  void setAxes(const QVector<float>& axes) {
+    publisher_.msgBuffer().axes = std::vector<float>(axes.begin(), axes.end());
     emit joyChanged();
   }
-  void setAxis(int index, float value){
-    if(index < publisher_.msgBuffer().axes.size()){
+
+  void setAxis(int index, float value) {
+    if (index < publisher_.msgBuffer().axes.size()) {
       publisher_.msgBuffer().axes[index] = value;
     }
   }
 
-  void resizeButtons(int size){
+  void resizeButtons(int size) {
     publisher_.msgBuffer().buttons.resize(size);
   }
+
   QVector<int> getButtons() {
-    auto buttons = QVector<int>::fromStdVector(publisher_.msgBuffer().buttons);
-    return buttons;
+    return QVector<int>(publisher_.msgBuffer().buttons.begin(), publisher_.msgBuffer().buttons.end());
   }
-  void setButtons(QVector<int> buttons) {
-    publisher_.msgBuffer().buttons = buttons.toStdVector();
+
+  void setButtons(const QVector<int>& buttons) {
+    publisher_.msgBuffer().buttons = std::vector<int>(buttons.begin(), buttons.end());
     emit joyChanged();
   }
-  void setButton(int index, int value){
-    if(index < publisher_.msgBuffer().buttons.size()){
+
+  void setButton(int index, int value) {
+    if (index < publisher_.msgBuffer().buttons.size()) {
       publisher_.msgBuffer().buttons[index] = value;
     }
   }
@@ -56,7 +60,7 @@ public slots:
     return QString::fromStdString(publisher_.msgBuffer().header.frame_id);
   }
 
-  void setFrameId(QString frameId) {
+  void setFrameId(const QString& frameId) {
     publisher_.msgBuffer().header.frame_id = frameId.toStdString();
     emit joyChanged();
   }
@@ -67,7 +71,7 @@ public slots:
     return QDateTime::fromMSecsSinceEpoch(totalMSecs);
   }
 
-  void setTimestamp(QDateTime timestamp) {
+  void setTimestamp(const QDateTime& timestamp) {
     publisher_.msgBuffer().header.stamp.sec = timestamp.toSecsSinceEpoch();
     publisher_.msgBuffer().header.stamp.nanosec = (timestamp.toMSecsSinceEpoch() % 1000) * 1000000;
     emit joyChanged();
@@ -89,16 +93,13 @@ public:
   Q_PROPERTY(QString frameId READ getFrameId NOTIFY joyChanged)
   Q_PROPERTY(QDateTime timestamp READ getTimestamp NOTIFY joyChanged)
 
-
 public slots:
   QVector<float> getAxes() {
-    auto axes = QVector<float>::fromStdVector(subscriber_.msgBuffer().axes);
-    return axes;
+    return QVector<float>(subscriber_.msgBuffer().axes.begin(), subscriber_.msgBuffer().axes.end());
   }
 
   QVector<int> getButtons() {
-    auto buttons = QVector<int>::fromStdVector(subscriber_.msgBuffer().buttons);
-    return buttons;
+    return QVector<int>(subscriber_.msgBuffer().buttons.begin(), subscriber_.msgBuffer().buttons.end());
   }
 
   QString getFrameId() {
@@ -113,7 +114,7 @@ public slots:
 
 signals:
   void joyChanged();
-  void pressed(int buttonIndex);  // Signal for when a button is pressed
+  void pressed(int buttonIndex);   // Signal for when a button is pressed
   void released(int buttonIndex); // Signal for when a button is released
 
 protected:
@@ -125,39 +126,30 @@ protected:
 private:
   QVector<int> lastButtonStates;
 
-  // Compare current button states to last known states and emit onPressed or onReleased as needed
   void compareAndEmitButtonPresses() {
     auto currentButtons = getButtons();
-    // Initialize lastButtonStates with zeros on the first message
+
     if (lastButtonStates.isEmpty()) {
       lastButtonStates = QVector<int>(currentButtons.size(), 0);
     }
 
-    // Check for the longest array to avoid index out of range
     int longestArraySize = std::max(currentButtons.size(), lastButtonStates.size());
-
-    // Resize arrays to match the longest one, filling new elements with 0
     currentButtons.resize(longestArraySize);
     lastButtonStates.resize(longestArraySize);
 
     for (int i = 0; i < longestArraySize; ++i) {
-      // Emit onPressed if the current state is pressed (greater than 0) and was not pressed before
       if (currentButtons[i] > 0 && lastButtonStates[i] == 0) {
         emit pressed(i);
-      }
-      // Emit onReleased if the current state is not pressed and was pressed before
-      else if (currentButtons[i] == 0 && lastButtonStates[i] > 0) {
+      } else if (currentButtons[i] == 0 && lastButtonStates[i] > 0) {
         emit released(i);
       }
     }
 
-    // Update lastButtonStates to reflect the current button states
     lastButtonStates = currentButtons;
   }
 
   QRosSubscriberInterface* interfacePtr() { return &subscriber_; }
   QRosTypedSubscriber<sensor_msgs::msg::Joy> subscriber_;
 };
-
 
 QROS_NS_FOOT
