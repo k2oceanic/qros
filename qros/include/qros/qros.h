@@ -25,6 +25,7 @@
 #include "qros_settings.h"
 #include "qros_float32.h"
 #include "qros_raw_analog_array.h"
+#include "qros_raw_digital.h"
 #include "qros_wrench_stamped.h"
 #include "qros_thrust_stamped.h"
 #include "qros_thrust_array.h"

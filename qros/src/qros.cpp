@@ -70,6 +70,9 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosWrenchStampedPublisher)
   REGISTER_QML_TYPE(QRosWrenchStampedSubscriber)
   REGISTER_QML_TYPE(QRosRawAnalogSubscriber)
+  REGISTER_QML_TYPE(QRosRawDigitalArrayPublisher)
+  REGISTER_QML_TYPE(QRosRawDigitalArraySubscriber)
+  REGISTER_QML_TYPE(QRosTripResetClient)
 
   // services
   REGISTER_QML_TYPE(QRosTriggerServiceClient)
