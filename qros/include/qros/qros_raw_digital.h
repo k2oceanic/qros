@@ -5,37 +5,59 @@
 #include <qros/qros_subscriber.h>
 #include <qros/qros_publisher.h>
 #include <qros/qros_service_client.h>
+#include <QString>
 #include <QVector>
 
 QROS_NS_HEAD
 
 /**
- * @brief Subscribes to a RawDigitalArray topic and exposes channel states as a QVector<bool>.
+ * @brief Subscribes to a RawDigitalArray topic and exposes channel data as QML properties.
  *
- * The states vector is always 6 elements, indexed by channel_id.
- * Any channel_id not present in the message defaults to false.
+ * Works with any number of channels — not limited to 6.
+ * Channels are 1-indexed (channel_id 1 = index 0 in states/channelIds vectors).
+ * states[i] corresponds to channelIds[i].
  */
 class QRosRawDigitalArraySubscriber : public QRosSubscriber {
   Q_OBJECT
 public:
-  Q_PROPERTY(QVector<bool> states READ getStates NOTIFY statesChanged)
+  Q_PROPERTY(QVector<int>  channelIds READ getChannelIds NOTIFY digitalsChanged)
+  Q_PROPERTY(QVector<bool> states     READ getStates     NOTIFY digitalsChanged)
+  Q_PROPERTY(QString       frameId    READ getFrameId    NOTIFY digitalsChanged)
 
 public slots:
-  QVector<bool> getStates() {
-    QVector<bool> result(6, false);
+  QVector<int> getChannelIds() {
+    QVector<int> ids;
     for (const auto& d : subscriber_.msgBuffer().digitals) {
-      if (d.channel_id >= 0 && d.channel_id < 6) {
-        result[d.channel_id] = d.state;
-      }
+      ids.push_back(d.channel_id);
+    }
+    return ids;
+  }
+
+  QVector<bool> getStates() {
+    QVector<bool> result;
+    for (const auto& d : subscriber_.msgBuffer().digitals) {
+      int idx = d.channel_id - 1;
+      if (idx >= result.size()) result.resize(idx + 1, false);
+      result[idx] = d.state;
     }
     return result;
   }
 
+  QString getFrameId() {
+    return QString::fromStdString(subscriber_.msgBuffer().header.frame_id);
+  }
+
 signals:
-  void statesChanged();
+  void digitalsChanged();
+  void digitalChanged(int channelId, bool state);
 
 protected:
-  void onMsgReceived() override { emit statesChanged(); }
+  void onMsgReceived() override {
+    for (const auto& d : subscriber_.msgBuffer().digitals) {
+      emit digitalChanged(d.channel_id, d.state);
+    }
+    emit digitalsChanged();
+  }
 
 private:
   QRosSubscriberInterface* interfacePtr() override { return &subscriber_; }
@@ -46,8 +68,8 @@ private:
 /**
  * @brief Publishes a RawDigitalArray topic.
  *
- * setChannel() clears the array and sets a single element, ensuring a clean
- * single-channel publish on each call. Use setAllChannels() to batch-set all channels.
+ * setChannel() sets a single channel by 1-based channel_id.
+ * setAllChannels() sets all channels starting from channel 1, sized to the input vector.
  */
 class QRosRawDigitalArrayPublisher : public QRosPublisher {
   Q_OBJECT
@@ -63,9 +85,9 @@ public slots:
 
   void setAllChannels(QVector<bool> states) {
     publisher_.msgBuffer().digitals.clear();
-    for (int i = 0; i < std::min(6, (int)states.size()); ++i) {
+    for (int i = 0; i < states.size(); ++i) {
       io_interfaces::msg::RawDigital d;
-      d.channel_id = i;
+      d.channel_id = i + 1;
       d.state = states[i];
       publisher_.msgBuffer().digitals.push_back(d);
     }
@@ -83,13 +105,13 @@ protected:
  * @brief Service client for io_interfaces/srv/TripReset.
  *
  * Call callTripReset(channel_id) to send a trip reset request.
- * Follows the QRosTriggerServiceClient pattern from qros_trigger_service.h.
+ * channel_id is 1-indexed to match the relay board convention.
  */
 class QRosTripResetClient : public QRosServiceClient {
   Q_OBJECT
 public:
-  Q_PROPERTY(bool respSuccess READ getSuccess NOTIFY responseChanged)
-  Q_PROPERTY(QString respMessage READ getMessage NOTIFY responseChanged)
+  Q_PROPERTY(bool    respSuccess READ getSuccess  NOTIFY responseChanged)
+  Q_PROPERTY(QString respMessage READ getMessage  NOTIFY responseChanged)
 
 public slots:
   bool getSuccess() {
