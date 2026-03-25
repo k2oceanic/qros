@@ -72,10 +72,10 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosRawAnalogSubscriber)
   REGISTER_QML_TYPE(QRosRawDigitalArrayPublisher)
   REGISTER_QML_TYPE(QRosRawDigitalArraySubscriber)
-  REGISTER_QML_TYPE(QRosTripResetClient)
 
   // services
   REGISTER_QML_TYPE(QRosTriggerServiceClient)
+  REGISTER_QML_TYPE(QRosChannelTriggerClient)
 
   // tf2
   REGISTER_QML_TYPE(QRosTfBuffer) // QML: QRosTfBuffer { node: applicationNode }

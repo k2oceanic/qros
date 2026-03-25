@@ -1,10 +1,8 @@
 #pragma once
 
 #include <io_interfaces/msg/raw_digital_array.hpp>
-#include <io_interfaces/srv/trip_reset.hpp>
 #include <qros/qros_subscriber.h>
 #include <qros/qros_publisher.h>
-#include <qros/qros_service_client.h>
 #include <QString>
 #include <QVector>
 
@@ -98,44 +96,6 @@ public slots:
 protected:
   QRosPublisherInterface* interfacePtr() override { return &publisher_; }
   QRosTypedPublisher<io_interfaces::msg::RawDigitalArray> publisher_;
-};
-
-
-/**
- * @brief Service client for io_interfaces/srv/TripReset.
- *
- * Call callTripReset(channel_id) to send a trip reset request.
- * channel_id is 1-indexed to match the relay board convention.
- */
-class QRosTripResetClient : public QRosServiceClient {
-  Q_OBJECT
-public:
-  Q_PROPERTY(bool    respSuccess READ getSuccess  NOTIFY responseChanged)
-  Q_PROPERTY(QString respMessage READ getMessage  NOTIFY responseChanged)
-
-public slots:
-  bool getSuccess() {
-    return client_.responseBuffer()->success;
-  }
-
-  QString getMessage() {
-    return QString::fromStdString(client_.responseBuffer()->message);
-  }
-
-  void callTripReset(int channel_id) {
-    client_.requestBuffer()->channel_id = channel_id;
-    interfacePtr()->callService();
-  }
-
-signals:
-  void responseChanged();
-
-protected:
-  QRosServiceClientInterface* interfacePtr() override { return &client_; }
-  void onResponseReceived() override { emit responseChanged(); }
-
-private:
-  QRosTypedServiceClient<io_interfaces::srv::TripReset> client_;
 };
 
 QROS_NS_FOOT
