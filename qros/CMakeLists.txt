@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 3.8)
 set(ROS_DEPENDS
   ament_cmake
   rclcpp
+  rcl_interfaces
   std_msgs
   sensor_msgs
   diagnostic_msgs

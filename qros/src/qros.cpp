@@ -1,9 +1,13 @@
 #include "qros/qros.h"
+#include "qros/qros_parameter_event.h"
+#include "qros/qros_parameter_client.h"
 
 QROS_NS_HEAD
 namespace qros {
 void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosNode)
+  REGISTER_QML_TYPE(QRosParameterEvent)
+  REGISTER_QML_TYPE(QRosParameterClient)
 
   // std_msgs
   REGISTER_QML_TYPE(QRosStringSubscriber)
