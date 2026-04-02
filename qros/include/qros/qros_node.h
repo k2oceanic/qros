@@ -39,6 +39,7 @@ public slots:
    * \return a QStringList of all the topics corresponding to the requested topic type
    */
   QStringList getTopicsOfType(QString topic_type);
+  QStringList getNodeNames();
 
   void declareParameter(const QString &param_name, const QVariant &default_value);
   QVariantMap getParameters();

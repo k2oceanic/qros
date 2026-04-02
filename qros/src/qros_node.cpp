@@ -133,6 +133,15 @@ QStringList QRosNode::getTopicsOfType(QString topic_type)
   return topicsList;
 }
 
+QStringList QRosNode::getNodeNames()
+{
+  QStringList list;
+  if (node_ptr_)
+    for (const auto &name : node_ptr_->get_node_names())
+      list.append(QString::fromStdString(name));
+  return list;
+}
+
 void QRosNode::declareParameter(const QString &param_name, const QVariant &default_value)
 {
   const std::string name = param_name.toStdString();
