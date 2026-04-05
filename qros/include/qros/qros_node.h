@@ -3,6 +3,7 @@
 #define QROS_NODE_H
 
 #include "qros_defs.h"
+#include "qros_parameter_event.h"
 
 #include <QObject>
 #include <QTimer>
@@ -12,16 +13,19 @@
 #include <QVariantMap>
 
 #include <rclcpp/rclcpp.hpp>
+#include <rcl_interfaces/msg/parameter_event.hpp>
 
 QROS_NS_HEAD
 class QRosNode : public QObject{
   Q_OBJECT
 public:
   Q_PROPERTY(QVariantMap parameters READ getParameters NOTIFY parametersChanged)
+  Q_PROPERTY(QRosParameterEvent* parameterEvent READ getParameterEvent CONSTANT)
 
   explicit QRosNode(QObject *parent = nullptr);
   rclcpp::Node::SharedPtr getNodePtr() const;
   void setNodePtr(const rclcpp::Node::SharedPtr &newNode_ptr);
+  QRosParameterEvent* getParameterEvent() const;
   rclcpp::ParameterValue paramValueFromQVariant(const QVariant &value);
   QVariant arrayToVariantList(const rclcpp::Parameter &param);
   QVariant paramValueToQVariant(const rclcpp::Parameter &param);
@@ -34,7 +38,11 @@ public slots:
    * \param topic_type a that specifies the topic type i.e. std_msgs/msg/Bool
    * \return a QStringList of all the topics corresponding to the requested topic type
    */
+  QStringList getTopics();
   QStringList getTopicsOfType(QString topic_type);
+  QStringList getServices();
+  QStringList getServicesOfType(QString service_type);
+  QStringList getNodeNames();
 
   void declareParameter(const QString &param_name, const QVariant &default_value);
   QVariantMap getParameters();
@@ -48,6 +56,7 @@ public slots:
   int  countSubscribers(const QString &topic);
   int  countPublishers(const QString &topic);
   QString getName();
+  QString getNamespace();
 
 
 signals:
@@ -57,9 +66,11 @@ signals:
   void parametersGetResult(bool success, QString node_name, QVariantMap params, QString error = "");
   void parametersListResult(bool success, QString node_name, QStringList param_names, QString error = "");
 private:
-  rclcpp::Node::SharedPtr node_ptr_ =nullptr;
+  rclcpp::Node::SharedPtr node_ptr_ = nullptr;
   QTimer *ros_timer_;
   QVariantMap parameters_;
+  QRosParameterEvent *parameter_event_;
+  rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr param_event_sub_;
 };
 QROS_NS_FOOT
 #endif
