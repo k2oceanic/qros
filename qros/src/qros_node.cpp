@@ -118,6 +118,15 @@ void QRosNode::spinRosSome()
   rclcpp::spin_some(node_ptr_);
 }
 
+QStringList QRosNode::getTopics()
+{
+  QStringList list;
+  if (node_ptr_)
+    for (const auto &topic : node_ptr_->get_topic_names_and_types())
+      list.append(QString::fromStdString(topic.first));
+  return list;
+}
+
 QStringList QRosNode::getTopicsOfType(QString topic_type)
 {
   QStringList topicsList;
@@ -131,6 +140,30 @@ QStringList QRosNode::getTopicsOfType(QString topic_type)
     }
   }
   return topicsList;
+}
+
+QStringList QRosNode::getServices()
+{
+  QStringList list;
+  if (node_ptr_)
+    for (const auto &service : node_ptr_->get_service_names_and_types())
+      list.append(QString::fromStdString(service.first));
+  return list;
+}
+
+QStringList QRosNode::getServicesOfType(QString service_type)
+{
+  QStringList servicesList;
+  if (node_ptr_) {
+    const auto services = node_ptr_->get_service_names_and_types();
+    for (const auto &service : services) {
+      QString serviceName = QString::fromStdString(service.first);
+      if (service.second[0] == service_type.toStdString()) {
+        servicesList.append(serviceName);
+      }
+    }
+  }
+  return servicesList;
 }
 
 QStringList QRosNode::getNodeNames()
@@ -334,6 +367,11 @@ int QRosNode::countPublishers(const QString &topic){
 
 QString QRosNode::getName(){
   QString::fromStdString(node_ptr_->get_name());
+}
+
+QString QRosNode::getNamespace(){
+  if (node_ptr_) return QString::fromStdString(node_ptr_->get_namespace());
+  return "";
 }
 
 QVariant QRosNode::paramValueToQVariant(const rclcpp::Parameter &param)

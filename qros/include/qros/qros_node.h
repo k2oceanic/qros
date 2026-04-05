@@ -38,7 +38,10 @@ public slots:
    * \param topic_type a that specifies the topic type i.e. std_msgs/msg/Bool
    * \return a QStringList of all the topics corresponding to the requested topic type
    */
+  QStringList getTopics();
   QStringList getTopicsOfType(QString topic_type);
+  QStringList getServices();
+  QStringList getServicesOfType(QString service_type);
   QStringList getNodeNames();
 
   void declareParameter(const QString &param_name, const QVariant &default_value);
@@ -53,6 +56,7 @@ public slots:
   int  countSubscribers(const QString &topic);
   int  countPublishers(const QString &topic);
   QString getName();
+  QString getNamespace();
 
 
 signals:
