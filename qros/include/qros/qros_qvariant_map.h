@@ -19,8 +19,17 @@ class QRosQVariantMapPublisher : public QRosPublisher {
     Q_OBJECT
 public:
     Q_PROPERTY(QStringList keys READ getKeys NOTIFY dataChanged)
+    Q_PROPERTY(QVariantMap map READ getMap WRITE setMap NOTIFY dataChanged)
 
 public slots:
+    QVariantMap getMap() {
+        QVariantMap result;
+        const auto& msg = publisher_.msgBuffer();
+        for (size_t i = 0; i < msg.keys.size() && i < msg.values.size(); ++i)
+            result[QString::fromStdString(msg.keys[i])] = rosToQVariant(msg.values[i]);
+        return result;
+    }
+
     QStringList getKeys() {
         QStringList list;
         for (const auto& k : publisher_.msgBuffer().keys)

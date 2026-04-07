@@ -1,11 +1,13 @@
 #pragma once
 
-#include "qros_publisher.h"
-#include "qros_subscriber.h"
-#include <qros_interfaces/msg/q_variant.hpp>
 #include <QByteArray>
 #include <QDataStream>
+#include <QIODevice>
 #include <QVariant>
+#include "qros_publisher.h"
+#include "qros_subscriber.h"
+#include <qdebug.h>
+#include <qros_interfaces/msg/q_variant.hpp>
 
 QROS_NS_HEAD
 
