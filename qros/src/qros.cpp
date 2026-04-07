@@ -85,6 +85,12 @@ void registerQmlTypes(){
   REGISTER_QML_TYPE(QRosTfBuffer) // QML: QRosTfBuffer { node: applicationNode }
   REGISTER_QML_TYPE(QRosTransformStamped)
 
+  // qros_interfaces
+  REGISTER_QML_TYPE(QRosQVariantPublisher)
+  REGISTER_QML_TYPE(QRosQVariantSubscriber)
+  REGISTER_QML_TYPE(QRosQVariantMapPublisher)
+  REGISTER_QML_TYPE(QRosQVariantMapSubscriber)
+
 }
 }
 QROS_NS_FOOT

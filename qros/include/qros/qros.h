@@ -40,6 +40,8 @@
 
 #include "qros_tf_buffer.h"             // QRosTfBuffer
 #include "qros_transform_stamped.h"     // QRosTransformStamped
+#include "qros_qvariant.h"              // QRosQVariantPublisher / QRosQVariantSubscriber
+#include "qros_qvariant_map.h"          // QRosQVariantMapPublisher / QRosQVariantMapSubscriber
 
 #define REGISTER_QML_TYPE(TYPE) \
   qmlRegisterType<TYPE>(QML_PACKAGE, QML_PACKAGE_VERSION_MAJOR, QML_PACKAGE_VERSION_MINOR, #TYPE); \
