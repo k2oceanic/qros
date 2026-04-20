@@ -15,6 +15,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rcl_interfaces/msg/parameter_event.hpp>
 
+#include <mutex>
+#include <unordered_map>
+
 QROS_NS_HEAD
 class QRosNode : public QObject{
   Q_OBJECT
@@ -66,11 +69,16 @@ signals:
   void parametersGetResult(bool success, QString node_name, QVariantMap params, QString error = "");
   void parametersListResult(bool success, QString node_name, QStringList param_names, QString error = "");
 private:
+  std::shared_ptr<rclcpp::AsyncParametersClient> getOrCreateParamClient(const std::string &node_name);
+
   rclcpp::Node::SharedPtr node_ptr_ = nullptr;
   QTimer *ros_timer_;
   QVariantMap parameters_;
   QRosParameterEvent *parameter_event_;
   rclcpp::Subscription<rcl_interfaces::msg::ParameterEvent>::SharedPtr param_event_sub_;
+
+  std::unordered_map<std::string, std::shared_ptr<rclcpp::AsyncParametersClient>> param_clients_;
+  std::mutex param_clients_mutex_;
 };
 QROS_NS_FOOT
 #endif

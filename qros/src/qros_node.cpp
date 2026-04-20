@@ -9,6 +9,18 @@ QRosNode::QRosNode(QObject *parent)
   parameter_event_ = new QRosParameterEvent(this);
 }
 
+std::shared_ptr<rclcpp::AsyncParametersClient>
+QRosNode::getOrCreateParamClient(const std::string &node_name)
+{
+  std::lock_guard<std::mutex> lock(param_clients_mutex_);
+  if (!node_ptr_) return nullptr;
+  auto it = param_clients_.find(node_name);
+  if (it != param_clients_.end()) return it->second;
+  auto client = std::make_shared<rclcpp::AsyncParametersClient>(node_ptr_, node_name);
+  param_clients_.emplace(node_name, client);
+  return client;
+}
+
 
 rclcpp::Node::SharedPtr QRosNode::getNodePtr() const
 {
@@ -23,6 +35,11 @@ rclcpp::Node::SharedPtr QRosNode::getNodePtr() const
 void QRosNode::setNodePtr(const rclcpp::Node::SharedPtr &newNode_ptr)
 {
   node_ptr_ = newNode_ptr;
+
+  {
+    std::lock_guard<std::mutex> lock(param_clients_mutex_);
+    param_clients_.clear();
+  }
 
   param_event_sub_ = node_ptr_->create_subscription<rcl_interfaces::msg::ParameterEvent>(
     "/parameter_events", 10,
@@ -268,7 +285,11 @@ void QRosNode::setExternalParameter(const QString &node_name,
                             const QVariant &value,
                             int wait_ms)
 {
-  auto param_client = std::make_shared<rclcpp::AsyncParametersClient>(node_ptr_, node_name.toStdString());
+  auto param_client = getOrCreateParamClient(node_name.toStdString());
+  if (!param_client) {
+    emit parameterSetResult(false, node_name, param_name);
+    return;
+  }
 
   if (param_client->wait_for_service(std::chrono::milliseconds(wait_ms))){
     auto param_value = paramValueFromQVariant(value);
@@ -299,7 +320,11 @@ void QRosNode::getExternalParameters(const QString &node_name, const QStringList
         return;
     }
 
-    auto param_client = std::make_shared<rclcpp::AsyncParametersClient>(node_ptr_, node_name.toStdString());
+    auto param_client = getOrCreateParamClient(node_name.toStdString());
+    if (!param_client) {
+        emit parametersGetResult(false, node_name, QVariantMap(), "Node pointer is null");
+        return;
+    }
     if (!param_client->wait_for_service(std::chrono::milliseconds(wait_ms))) {
         RCLCPP_WARN_THROTTLE(node_ptr_->get_logger(), *node_ptr_->get_clock(), 5000,
             "Service not available for node: %s", node_name.toStdString().c_str());
@@ -334,7 +359,11 @@ void QRosNode::listExternalParametersAsync(const QString &node_name, int wait_ms
             return;
         }
 
-        auto param_client = std::make_shared<rclcpp::AsyncParametersClient>(node_ptr_, node_name.toStdString());
+        auto param_client = getOrCreateParamClient(node_name.toStdString());
+        if (!param_client) {
+            emit parametersListResult(false, node_name, {}, "Node pointer is null");
+            return;
+        }
         if (!param_client->wait_for_service(std::chrono::milliseconds(wait_ms))) {
             RCLCPP_WARN_THROTTLE(node_ptr_->get_logger(), *node_ptr_->get_clock(), 5000,
                 "Service not available for node: %s", node_name.toStdString().c_str());
