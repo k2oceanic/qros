@@ -2,6 +2,17 @@
 #ifndef QROS_H
 #define QROS_H
 
+/**
+ * @file qros.h
+ * @brief Umbrella include for the entire qros library.
+ *
+ * Include this file to bring in all qros types and the REGISTER_QML_TYPE
+ * macro used by qros.cpp to register every type with the QML engine.
+ *
+ * Applications should also call qros::registerQmlTypes() once before the
+ * QML engine loads its root component.
+ */
+
 #include "qros_node.h"
 #include "qqml.h"
 #include "qros_publisher.h"

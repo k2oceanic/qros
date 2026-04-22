@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file qros_wrench_stamped.h
+ * @brief Publisher and subscriber for geometry_msgs/msg/WrenchStamped.
+ */
+
 #include "qros_subscriber.h"
 #include "qros_publisher.h"
 #include <geometry_msgs/msg/wrench_stamped.hpp>
@@ -9,12 +14,32 @@
 
 QROS_NS_HEAD
 
+/**
+ * @brief Publishes `geometry_msgs/WrenchStamped` messages.
+ *
+ * Suitable for publishing force/torque sensor readings or commanded wrenches.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosWrenchStampedPublisher {
+ *     node:    applicationNode
+ *     topic:   "/commanded_wrench"
+ *     force:   Qt.vector3d(fx, fy, fz)
+ *     torque:  Qt.vector3d(tx, ty, tz)
+ *     frameId: "base_link"
+ * }
+ * @endcode
+ */
 class QRosWrenchStampedPublisher : public QRosPublisher{
   Q_OBJECT
 public:
+  /// Force vector (x, y, z) in Newtons.
   Q_PROPERTY(QVector3D force READ getForce WRITE setForce NOTIFY wrenchChanged)
+  /// Torque vector (x, y, z) in Newton-metres.
   Q_PROPERTY(QVector3D torque READ getTorque WRITE setTorque NOTIFY wrenchChanged)
+  /// Coordinate frame ID.
   Q_PROPERTY(QString frameId READ getFrameId WRITE setFrameId NOTIFY wrenchChanged)
+  /// Message header timestamp.
   Q_PROPERTY(QDateTime timestamp READ getTimestamp WRITE setTimestamp NOTIFY wrenchChanged)
 
 public slots:
@@ -70,12 +95,31 @@ protected:
 };
 
 
+/**
+ * @brief Subscribes to `geometry_msgs/WrenchStamped` messages.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosWrenchStampedSubscriber {
+ *     node:  applicationNode
+ *     topic: "/ft_sensor/wrench"
+ *     onWrenchChanged: {
+ *         forceX.value = force.x
+ *         torqueZ.value = torque.z
+ *     }
+ * }
+ * @endcode
+ */
 class QRosWrenchStampedSubscriber : public QRosSubscriber{
   Q_OBJECT
 public:
+  /// Force vector from the last received message.
   Q_PROPERTY(QVector3D force READ getForce NOTIFY wrenchChanged)
+  /// Torque vector from the last received message.
   Q_PROPERTY(QVector3D torque READ getTorque NOTIFY wrenchChanged)
+  /// Frame ID from the last received message header.
   Q_PROPERTY(QString frameId READ getFrameId NOTIFY wrenchChanged)
+  /// Timestamp from the last received message header.
   Q_PROPERTY(QDateTime timestamp READ getTimestamp NOTIFY wrenchChanged)
 
 public slots:

@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file qros_odometry.h
+ * @brief Publisher and subscriber for nav_msgs/msg/Odometry.
+ */
+
 #include "qros_subscriber.h"
 #include "qros_publisher.h"
 #include <nav_msgs/msg/odometry.hpp>
@@ -10,22 +15,41 @@
 
 QROS_NS_HEAD
 
-
+/**
+ * @brief Publishes `nav_msgs/Odometry` messages.
+ *
+ * Exposes pose (position + orientation) and twist (linear + angular velocity)
+ * as writable QML properties.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosOdometryPublisher {
+ *     node:           applicationNode
+ *     topic:          "/odom_override"
+ *     position:       Qt.vector3d(x, y, z)
+ *     orientation:    Qt.quaternion(w, x, y, z)
+ *     linearVelocity: Qt.vector3d(vx, vy, 0)
+ *     frameId:        "odom"
+ * }
+ * @endcode
+ */
 class QRosOdometryPublisher : public QRosPublisher {
   Q_OBJECT
 public:
-  // Pose properties
+  /// Pose position (x, y, z) in metres.
   Q_PROPERTY(QVector3D position READ getPosition WRITE setPosition NOTIFY odometryChanged)
+  /// Pose orientation quaternion (w, x, y, z).
   Q_PROPERTY(QQuaternion orientation READ getOrientation WRITE setOrientation NOTIFY odometryChanged)
-  // Twist properties
+  /// Linear velocity (x, y, z) in m/s.
   Q_PROPERTY(QVector3D linearVelocity READ getLinearVelocity WRITE setLinearVelocity NOTIFY odometryChanged)
+  /// Angular velocity (roll, pitch, yaw) in rad/s.
   Q_PROPERTY(QVector3D angularVelocity READ getAngularVelocity WRITE setAngularVelocity NOTIFY odometryChanged)
-  // Frame ID and timestamp
+  /// Coordinate frame ID (e.g. "odom").
   Q_PROPERTY(QString frameId READ getFrameId WRITE setFrameId NOTIFY odometryChanged)
+  /// Message header timestamp.
   Q_PROPERTY(QDateTime timestamp READ getTimestamp WRITE setTimestamp NOTIFY odometryChanged)
 
 public slots:
-  // Pose methods
   QVector3D getPosition() {
     auto position = publisher_.msgBuffer().pose.pose.position;
     return QVector3D(position.x, position.y, position.z);
@@ -49,7 +73,6 @@ public slots:
     emit odometryChanged();
   }
 
-  // Twist methods
   QVector3D getLinearVelocity() {
     auto linear = publisher_.msgBuffer().twist.twist.linear;
     return QVector3D(linear.x, linear.y, linear.z);
@@ -101,16 +124,38 @@ protected:
   QRosTypedPublisher<nav_msgs::msg::Odometry> publisher_;
 };
 
+/**
+ * @brief Subscribes to `nav_msgs/Odometry` messages.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosOdometrySubscriber {
+ *     node:  applicationNode
+ *     topic: "/odom"
+ *     onOdometryChanged: {
+ *         positionDisplay.x = position.x
+ *         positionDisplay.y = position.y
+ *         headingDisplay.value = Qt.eulerAngles(orientation).z
+ *     }
+ * }
+ * @endcode
+ */
 class QRosOdometrySubscriber : public QRosSubscriber {
   Q_OBJECT
 public:
+  /// Pose position from the last received message.
   Q_PROPERTY(QVector3D position READ getPosition NOTIFY odometryChanged)
+  /// Pose orientation quaternion from the last received message.
   Q_PROPERTY(QQuaternion orientation READ getOrientation NOTIFY odometryChanged)
+  /// Linear velocity from the last received message.
   Q_PROPERTY(QVector3D linearVelocity READ getLinearVelocity NOTIFY odometryChanged)
+  /// Angular velocity from the last received message.
   Q_PROPERTY(QVector3D angularVelocity READ getAngularVelocity NOTIFY odometryChanged)
+  /// Frame ID from the last received message header.
   Q_PROPERTY(QString frameId READ getFrameId NOTIFY odometryChanged)
+  /// Child frame ID from the last received message.
   Q_PROPERTY(QString childFrameId READ getChildFrameId NOTIFY odometryChanged)
-
+  /// Timestamp from the last received message header.
   Q_PROPERTY(QDateTime timestamp READ getTimestamp NOTIFY odometryChanged)
 
 public slots:

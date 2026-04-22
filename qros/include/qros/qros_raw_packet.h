@@ -1,16 +1,38 @@
 #pragma once
 
+/**
+ * @file qros_raw_packet.h
+ * @brief Publisher and subscriber for io_interfaces/msg/RawPacket.
+ */
+
 #include "qros_publisher.h"
 #include "qros_subscriber.h"
-#include "io_interfaces/msg/raw_packet.hpp" 
+#include "io_interfaces/msg/raw_packet.hpp"
 #include <QString>
 #include <QByteArray>
 
 QROS_NS_HEAD
 
+/**
+ * @brief Publishes `io_interfaces/RawPacket` messages.
+ *
+ * Suitable for sending raw byte sequences over a ROS topic, e.g. to a
+ * serial-bridge node.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosRawPacketPublisher {
+ *     id:    pktPub
+ *     node:  applicationNode
+ *     topic: "/serial_bridge/tx"
+ * }
+ * // From JS: pktPub.data = new ArrayBuffer(...)  or  a QByteArray-compatible value
+ * @endcode
+ */
 class QRosRawPacketPublisher : public QRosPublisher{
   Q_OBJECT
 public:
+  /// Raw bytes to publish.
   Q_PROPERTY(QByteArray data READ getData WRITE setData NOTIFY dataChanged)
 public slots:
   QByteArray getData(){
@@ -25,14 +47,31 @@ signals:
 
 protected:
   QRosPublisherInterface * interfacePtr(){return &publisher_;}
-  QRosTypedPublisher<io_interfaces::msg::RawPacket> publisher_;  
+  QRosTypedPublisher<io_interfaces::msg::RawPacket> publisher_;
 };
 
 
+/**
+ * @brief Subscribes to `io_interfaces/RawPacket` messages.
+ *
+ * Exposes the raw payload as a printable ASCII string and as a
+ * space-separated hexadecimal string for debugging.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosRawPacketSubscriber {
+ *     node:  applicationNode
+ *     topic: "/serial_bridge/rx"
+ *     onDataChanged: rawLog.append(dataAsHex)
+ * }
+ * @endcode
+ */
 class QRosRawPacketSubscriber : public QRosSubscriber{
   Q_OBJECT
 public:
+  /// Payload interpreted as ASCII text (non-printable bytes may appear garbled).
   Q_PROPERTY(QString dataAsAscii READ getDataAsAscii NOTIFY dataChanged)
+  /// Payload as a space-separated uppercase hex string (e.g. "A0 FF 3C").
   Q_PROPERTY(QString dataAsHex READ getDataAsHex NOTIFY dataChanged)
 public slots:
   QString getDataAsAscii() {
@@ -58,7 +97,7 @@ protected:
 
 private:
   QRosSubscriberInterface* interfacePtr(){return &subscriber_;}
-  QRosTypedSubscriber<io_interfaces::msg::RawPacket> subscriber_;  
+  QRosTypedSubscriber<io_interfaces::msg::RawPacket> subscriber_;
 };
 
 QROS_NS_FOOT

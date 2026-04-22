@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file qros_thrust_array.h
+ * @brief Publisher and subscriber for propulsion_interfaces/msg/ThrustArray.
+ */
+
 #include "qros_publisher.h"
 #include "qros_subscriber.h"
 #include <propulsion_interfaces/msg/thrust_array.hpp>
@@ -9,15 +14,39 @@
 
 QROS_NS_HEAD
 
+/**
+ * @brief Publishes `propulsion_interfaces/ThrustArray` messages.
+ *
+ * Commands multiple thrusters simultaneously.  Call resizeThrusts() once to
+ * set the array size, then populate scales and proportional values.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosThrustArrayPublisher {
+ *     id:   thrustPub
+ *     node: applicationNode
+ *     topic: "/thruster_array/cmd"
+ *     Component.onCompleted: resizeThrusts(6)
+ * }
+ * // From a joystick handler:
+ * // thrustPub.proportionalValues = [surge, sway, heave, roll, pitch, yaw]
+ * // thrustPub.publish()
+ * @endcode
+ */
 class QRosThrustArrayPublisher : public QRosPublisher {
   Q_OBJECT
 public:
+  /// Scale values (max thrust in Newtons) for each thruster.
   Q_PROPERTY(QVector<float> scales READ getScales WRITE setScales NOTIFY thrustArrayChanged)
+  /// Proportional thrust commands (−1.0 to 1.0) for each thruster.
   Q_PROPERTY(QVector<float> proportionalValues READ getProportionalValues WRITE setProportionalValues NOTIFY thrustArrayChanged)
+  /// Coordinate frame ID.
   Q_PROPERTY(QString frameId READ getFrameId WRITE setFrameId NOTIFY thrustArrayChanged)
+  /// Message header timestamp.
   Q_PROPERTY(QDateTime timestamp READ getTimestamp WRITE setTimestamp NOTIFY thrustArrayChanged)
 
 public slots:
+  /// Resizes the thrusters array to @p size entries (initialised to 0).
   void resizeThrusts(int size) {
     publisher_.msgBuffer().thrusts.resize(size);
   }
@@ -86,12 +115,31 @@ protected:
 };
 
 
+/**
+ * @brief Subscribes to `propulsion_interfaces/ThrustArray` messages.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosThrustArraySubscriber {
+ *     node:  applicationNode
+ *     topic: "/thruster_array/feedback"
+ *     onThrustArrayChanged: {
+ *         for (var i = 0; i < proportionalValues.length; i++)
+ *             thrusterBars[i].value = proportionalValues[i]
+ *     }
+ * }
+ * @endcode
+ */
 class QRosThrustArraySubscriber : public QRosSubscriber {
   Q_OBJECT
 public:
+  /// Scale values from the last received message.
   Q_PROPERTY(QVector<float> scales READ getScales NOTIFY thrustArrayChanged)
+  /// Proportional values from the last received message.
   Q_PROPERTY(QVector<float> proportionalValues READ getProportionalValues NOTIFY thrustArrayChanged)
+  /// Frame ID from the last received message header.
   Q_PROPERTY(QString frameId READ getFrameId NOTIFY thrustArrayChanged)
+  /// Timestamp from the last received message header.
   Q_PROPERTY(QDateTime timestamp READ getTimestamp NOTIFY thrustArrayChanged)
 
 public slots:

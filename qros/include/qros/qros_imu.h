@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file qros_imu.h
+ * @brief Publisher and subscriber for sensor_msgs/msg/Imu.
+ */
+
 #include "qros_subscriber.h"
 #include "qros_publisher.h"
 #include <sensor_msgs/msg/imu.hpp>
@@ -10,15 +15,35 @@
 
 QROS_NS_HEAD
 
-    class QRosImuPublisher : public QRosPublisher {
+/**
+ * @brief Publishes `sensor_msgs/Imu` messages.
+ *
+ * Exposes orientation (quaternion), angular velocity, linear acceleration,
+ * frame ID, and timestamp as writable QML properties.  All fields use the
+ * single `imuChanged` signal.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosImuPublisher {
+ *     node:        applicationNode
+ *     topic:       "/imu/raw"
+ *     orientation: Qt.quaternion(1, 0, 0, 0)
+ *     frameId:     "imu_link"
+ * }
+ * @endcode
+ */
+class QRosImuPublisher : public QRosPublisher {
   Q_OBJECT
 public:
-  // Orientation properties
+  /// Orientation as a quaternion (w, x, y, z).
   Q_PROPERTY(QQuaternion orientation READ getOrientation WRITE setOrientation NOTIFY imuChanged)
+  /// Angular velocity in rad/s (x, y, z).
   Q_PROPERTY(QVector3D angularVelocity READ getAngularVelocity WRITE setAngularVelocity NOTIFY imuChanged)
+  /// Linear acceleration in m/s² (x, y, z).
   Q_PROPERTY(QVector3D linearAcceleration READ getLinearAcceleration WRITE setLinearAcceleration NOTIFY imuChanged)
-  // Frame ID and timestamp
+  /// Coordinate frame ID (e.g. "imu_link").
   Q_PROPERTY(QString frameId READ getFrameId WRITE setFrameId NOTIFY imuChanged)
+  /// Message header timestamp.
   Q_PROPERTY(QDateTime timestamp READ getTimestamp WRITE setTimestamp NOTIFY imuChanged)
 
 public slots:
@@ -85,13 +110,33 @@ protected:
   QRosTypedPublisher<sensor_msgs::msg::Imu> publisher_;
 };
 
+/**
+ * @brief Subscribes to `sensor_msgs/Imu` messages.
+ *
+ * Exposes orientation, angular velocity, linear acceleration, frame ID,
+ * and timestamp as read-only QML properties.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosImuSubscriber {
+ *     node:  applicationNode
+ *     topic: "/imu/data"
+ *     onImuChanged: attitudeIndicator.quaternion = orientation
+ * }
+ * @endcode
+ */
 class QRosImuSubscriber : public QRosSubscriber {
   Q_OBJECT
 public:
+  /// Last received orientation quaternion (w, x, y, z).
   Q_PROPERTY(QQuaternion orientation READ getOrientation NOTIFY imuChanged)
+  /// Last received angular velocity in rad/s.
   Q_PROPERTY(QVector3D angularVelocity READ getAngularVelocity NOTIFY imuChanged)
+  /// Last received linear acceleration in m/s².
   Q_PROPERTY(QVector3D linearAcceleration READ getLinearAcceleration NOTIFY imuChanged)
+  /// Frame ID from the last received message header.
   Q_PROPERTY(QString frameId READ getFrameId NOTIFY imuChanged)
+  /// Timestamp from the last received message header.
   Q_PROPERTY(QDateTime timestamp READ getTimestamp NOTIFY imuChanged)
 
 public slots:

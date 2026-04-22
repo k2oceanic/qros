@@ -1,5 +1,14 @@
 #pragma once
 
+/**
+ * @file qros_qvariant_map.h
+ * @brief Publisher and subscriber for qros_interfaces/msg/QVariantMap.
+ *
+ * A string-keyed dictionary of QVariant values transmitted over a ROS topic.
+ * Each entry is serialised via QDataStream (same encoding as QRosQVariantPublisher).
+ * This allows QML objects (JSON-like structures) to be shared across nodes.
+ */
+
 #include "qros_publisher.h"
 #include "qros_subscriber.h"
 #include "qros_qvariant.h"  // rosToQVariant / qvariantToRos helpers
@@ -15,11 +24,36 @@ QROS_NS_HEAD
 // Publisher
 // ---------------------------------------------------------------------------
 
+/**
+ * @brief Publishes `qros_interfaces/QVariantMap` messages.
+ *
+ * Wraps a QVariantMap (string → QVariant) for transmission over ROS.
+ * Individual entries can be updated with setValue(); the entire map can be
+ * replaced with setMap().
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosQVariantMapPublisher {
+ *     node:    applicationNode
+ *     topic:   "/ui_state"
+ *     latched: true
+ *     map: ({
+ *         "mode":   currentMode,
+ *         "active": isActive,
+ *         "gain":   gainSlider.value
+ *     })
+ *     onTopicChanged: publish()
+ *     onDataChanged:  publish()
+ * }
+ * @endcode
+ */
 class QRosQVariantMapPublisher : public QRosPublisher {
     Q_OBJECT
 public:
-    Q_PROPERTY(QStringList keys READ getKeys NOTIFY dataChanged)
-    Q_PROPERTY(QVariantMap map READ getMap WRITE setMap NOTIFY dataChanged)
+  /// Ordered list of keys in the current map.
+  Q_PROPERTY(QStringList keys READ getKeys NOTIFY dataChanged)
+  /// The full map as a QVariantMap.
+  Q_PROPERTY(QVariantMap map READ getMap WRITE setMap NOTIFY dataChanged)
 
 public slots:
     QVariantMap getMap() {
@@ -37,7 +71,7 @@ public slots:
         return list;
     }
 
-    /// Replace the entire map contents from a QVariantMap.
+    /// Replaces the entire map contents from a QVariantMap.
     void setMap(const QVariantMap& map) {
         auto& msg = publisher_.msgBuffer();
         msg.keys.clear();
@@ -51,7 +85,11 @@ public slots:
         emit dataChanged();
     }
 
-    /// Insert or update a single key/value pair.
+    /**
+     * @brief Inserts or updates a single key/value pair.
+     * @param key    Map key string.
+     * @param value  Value to associate with the key.
+     */
     void setValue(const QString& key, const QVariant& value) {
         auto& msg = publisher_.msgBuffer();
         const std::string k = key.toStdString();
@@ -69,7 +107,10 @@ public slots:
         emit dataChanged();
     }
 
-    /// Remove a key/value pair by key. No-op if the key does not exist.
+    /**
+     * @brief Removes a key/value pair by key.  No-op if the key does not exist.
+     * @param key  Map key to remove.
+     */
     void removeKey(const QString& key) {
         auto& msg = publisher_.msgBuffer();
         const std::string k = key.toStdString();
@@ -83,6 +124,7 @@ public slots:
         }
     }
 
+    /// Clears all entries from the map.
     void clear() {
         publisher_.msgBuffer().keys.clear();
         publisher_.msgBuffer().values.clear();
@@ -101,9 +143,28 @@ protected:
 // Subscriber
 // ---------------------------------------------------------------------------
 
+/**
+ * @brief Subscribes to `qros_interfaces/QVariantMap` messages.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosQVariantMapSubscriber {
+ *     node:    applicationNode
+ *     latched: true
+ *     topic:   "/ui_state"
+ *     onMsgReceived: {
+ *         const m = map
+ *         root.mode   = m["mode"]   ?? root.mode
+ *         root.active = m["active"] ?? root.active
+ *         root.gain   = m["gain"]   ?? root.gain
+ *     }
+ * }
+ * @endcode
+ */
 class QRosQVariantMapSubscriber : public QRosSubscriber {
     Q_OBJECT
 public:
+    /// Ordered list of keys from the last received message.
     Q_PROPERTY(QStringList keys READ getKeys NOTIFY dataChanged)
     /// The full map as a QVariantMap — the most convenient property for QML (map.someKey).
     Q_PROPERTY(QVariantMap map READ getMap NOTIFY dataChanged)
@@ -124,7 +185,11 @@ public slots:
         return result;
     }
 
-    /// Look up a single value by key. Returns an invalid QVariant if not found.
+    /**
+     * @brief Returns a single value by key.
+     * @param key  Map key to look up.
+     * @return The stored value, or an invalid QVariant if the key is not found.
+     */
     QVariant value(const QString& key) {
         const auto& msg = subscriber_.msgBuffer();
         const std::string k = key.toStdString();
@@ -135,6 +200,10 @@ public slots:
         return QVariant();
     }
 
+    /**
+     * @brief Returns true if @p key is present in the last received message.
+     * @param key  Map key to check.
+     */
     bool containsKey(const QString& key) {
         const std::string k = key.toStdString();
         for (const auto& existing : subscriber_.msgBuffer().keys) {

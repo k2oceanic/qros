@@ -1,4 +1,10 @@
 #pragma once
+
+/**
+ * @file qros_transform_stamped.h
+ * @brief QML-exposed wrapper for geometry_msgs/msg/TransformStamped.
+ */
+
 #include "qros_defs.h"
 
 #include <QObject>
@@ -11,15 +17,39 @@
 
 QROS_NS_HEAD
 
-    class QRosTransformStamped : public QObject {
+/**
+ * @brief Immutable value object representing a single stamped coordinate transform.
+ *
+ * Created by QRosTfBuffer::lookupTransform() and owned by QML.  Exposes
+ * translation, rotation, and a pre-computed 4×4 transformation matrix
+ * for direct use in Qt 3D or shader-based visualisation.
+ *
+ * The `valid` property is false when the lookup failed; all other fields
+ * are undefined in that case.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * property var tf: tfBuffer.lookupTransform("world", "tool")
+ * Text { text: tf.valid ? tf.translation.toString() : "no transform" }
+ * @endcode
+ */
+class QRosTransformStamped : public QObject {
   Q_OBJECT
+  /// False if the lookup that produced this object failed.
   Q_PROPERTY(bool        valid        READ valid        WRITE setValid        NOTIFY validChanged)
+  /// Header frame ID of the parent (target) frame.
   Q_PROPERTY(QString     frameId      READ frameId      WRITE setFrameId      NOTIFY frameIdChanged)
+  /// Child (source) frame ID.
   Q_PROPERTY(QString     childFrameId READ childFrameId WRITE setChildFrameId NOTIFY childFrameIdChanged)
-  Q_PROPERTY(double      stampSec     READ stampSec     WRITE setStampSec     NOTIFY stampSecChanged)  // seconds (double)
-  Q_PROPERTY(QDateTime   stamp        READ stamp        WRITE setStamp        NOTIFY stampChanged)      // Qt UTC time
+  /// Timestamp as a double (seconds since epoch).
+  Q_PROPERTY(double      stampSec     READ stampSec     WRITE setStampSec     NOTIFY stampSecChanged)
+  /// Timestamp as a QDateTime (UTC).
+  Q_PROPERTY(QDateTime   stamp        READ stamp        WRITE setStamp        NOTIFY stampChanged)
+  /// Translation vector (x, y, z) in metres.
   Q_PROPERTY(QVector3D   translation  READ translation  WRITE setTranslation  NOTIFY translationChanged)
+  /// Rotation quaternion (w, x, y, z).
   Q_PROPERTY(QQuaternion rotation     READ rotation     WRITE setRotation     NOTIFY rotationChanged)
+  /// Pre-computed 4×4 homogeneous transform matrix (read-only).
   Q_PROPERTY(QMatrix4x4  matrix       READ matrix                              NOTIFY matrixChanged)
 
 public:
@@ -27,7 +57,12 @@ public:
     m_.setToIdentity();
   }
 
-  // Factory helpers
+  /**
+   * @brief Constructs a valid QRosTransformStamped from a ROS message.
+   * @param tf      Source ROS TransformStamped message.
+   * @param parent  Optional Qt parent.
+   * @return Heap-allocated object to be owned by QML.
+   */
   static QRosTransformStamped* fromMsg(const geometry_msgs::msg::TransformStamped& tf, QObject* parent=nullptr) {
     auto *obj = new QRosTransformStamped(parent);
     obj->valid_ = true;
@@ -47,6 +82,11 @@ public:
     return obj;
   }
 
+  /**
+   * @brief Constructs an invalid sentinel object (lookup failed).
+   * @param parent  Optional Qt parent.
+   * @return Heap-allocated object to be owned by QML; `valid` is false.
+   */
   static QRosTransformStamped* invalid(QObject* parent=nullptr) {
     auto *obj = new QRosTransformStamped(parent);
     obj->valid_ = false;
@@ -83,6 +123,7 @@ public:
     emit childFrameIdChanged();
   }
 
+  /// Sets the stamp in seconds and keeps the QDateTime property in sync.
   void setStampSec(double s) {
     if (qFuzzyCompare(stamp_sec_, s)) return;
     stamp_sec_ = s;
@@ -92,6 +133,7 @@ public:
     emit stampChanged();
   }
 
+  /// Sets the stamp as a QDateTime and keeps the seconds property in sync.
   void setStamp(const QDateTime& dt) {
     if (stamp_ == dt) return;
     stamp_ = dt;

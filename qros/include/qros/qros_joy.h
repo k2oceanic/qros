@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file qros_joy.h
+ * @brief Publisher and subscriber for sensor_msgs/msg/Joy.
+ */
+
 #include "qros_subscriber.h"
 #include "qros_publisher.h"
 #include <sensor_msgs/msg/joy.hpp>
@@ -9,15 +14,35 @@
 
 QROS_NS_HEAD
 
-    class QRosJoyPublisher : public QRosPublisher {
+/**
+ * @brief Publishes `sensor_msgs/Joy` messages.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosJoyPublisher {
+ *     id:    joyPub
+ *     node:  applicationNode
+ *     topic: "/joy_override"
+ * }
+ * // Set individual fields from JS:
+ * // joyPub.setAxis(0, leftStick.x)
+ * // joyPub.setButton(0, aButton.pressed ? 1 : 0)
+ * @endcode
+ */
+class QRosJoyPublisher : public QRosPublisher {
   Q_OBJECT
 public:
+  /// Axis values (typically −1.0 to 1.0 per axis).
   Q_PROPERTY(QVector<float> axes READ getAxes WRITE setAxes NOTIFY joyChanged)
+  /// Button states (0 = released, 1 = pressed per button).
   Q_PROPERTY(QVector<int> buttons READ getButtons WRITE setButtons NOTIFY joyChanged)
+  /// Coordinate frame ID.
   Q_PROPERTY(QString frameId READ getFrameId WRITE setFrameId NOTIFY joyChanged)
+  /// Message header timestamp.
   Q_PROPERTY(QDateTime timestamp READ getTimestamp WRITE setTimestamp NOTIFY joyChanged)
 
 public slots:
+  /// Resizes the axes array to @p size elements (initialised to 0).
   void resizeAxes(int size) {
     publisher_.msgBuffer().axes.resize(size);
   }
@@ -31,12 +56,18 @@ public slots:
     emit joyChanged();
   }
 
+  /**
+   * @brief Sets the value of a single axis by index.
+   * @param index  Zero-based axis index.
+   * @param value  Axis value (typically −1.0 to 1.0).
+   */
   void setAxis(int index, float value) {
     if (index < publisher_.msgBuffer().axes.size()) {
       publisher_.msgBuffer().axes[index] = value;
     }
   }
 
+  /// Resizes the buttons array to @p size elements (initialised to 0).
   void resizeButtons(int size) {
     publisher_.msgBuffer().buttons.resize(size);
   }
@@ -50,6 +81,11 @@ public slots:
     emit joyChanged();
   }
 
+  /**
+   * @brief Sets the state of a single button by index.
+   * @param index  Zero-based button index.
+   * @param value  Button state (0 = released, 1 = pressed).
+   */
   void setButton(int index, int value) {
     if (index < publisher_.msgBuffer().buttons.size()) {
       publisher_.msgBuffer().buttons[index] = value;
@@ -85,12 +121,35 @@ protected:
   QRosTypedPublisher<sensor_msgs::msg::Joy> publisher_;
 };
 
+/**
+ * @brief Subscribes to `sensor_msgs/Joy` messages.
+ *
+ * In addition to the standard `joyChanged` signal, this class emits
+ * `pressed(buttonIndex)` and `released(buttonIndex)` edge-detect signals
+ * on every state transition, making it easy to react to individual button
+ * presses without tracking state in QML.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosJoySubscriber {
+ *     node:  applicationNode
+ *     topic: "/joy"
+ *     onJoyChanged:       thrusterDisplay.axes = axes
+ *     onPressed: (btn) => { if (btn === 0) triggerAction() }
+ *     onReleased: (btn) => console.log("button", btn, "released")
+ * }
+ * @endcode
+ */
 class QRosJoySubscriber : public QRosSubscriber {
   Q_OBJECT
 public:
+  /// Last received axis values.
   Q_PROPERTY(QVector<float> axes READ getAxes NOTIFY joyChanged)
+  /// Last received button states.
   Q_PROPERTY(QVector<int> buttons READ getButtons NOTIFY joyChanged)
+  /// Frame ID from the last received message header.
   Q_PROPERTY(QString frameId READ getFrameId NOTIFY joyChanged)
+  /// Timestamp from the last received message header.
   Q_PROPERTY(QDateTime timestamp READ getTimestamp NOTIFY joyChanged)
 
 public slots:
@@ -113,9 +172,12 @@ public slots:
   }
 
 signals:
+  /// Emitted on every received message.
   void joyChanged();
-  void pressed(int buttonIndex);   // Signal for when a button is pressed
-  void released(int buttonIndex); // Signal for when a button is released
+  /// Emitted when button @p buttonIndex transitions from released to pressed.
+  void pressed(int buttonIndex);
+  /// Emitted when button @p buttonIndex transitions from pressed to released.
+  void released(int buttonIndex);
 
 protected:
   void onMsgReceived() override {

@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file qros_point_stamped.h
+ * @brief Publisher and subscriber for geometry_msgs/msg/PointStamped.
+ */
+
 #include "qros_subscriber.h"
 #include "qros_publisher.h"
 #include <geometry_msgs/msg/point_stamped.hpp>
@@ -9,11 +14,27 @@
 
 QROS_NS_HEAD
 
-    class QRosPointStampedPublisher : public QRosPublisher{
+/**
+ * @brief Publishes `geometry_msgs/PointStamped` messages.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosPointStampedPublisher {
+ *     node:     applicationNode
+ *     topic:    "/clicked_point"
+ *     position: Qt.vector3d(x, y, 0)
+ *     frameId:  "map"
+ * }
+ * @endcode
+ */
+class QRosPointStampedPublisher : public QRosPublisher{
   Q_OBJECT
 public:
+  /// Point position (x, y, z) in metres.
   Q_PROPERTY(QVector3D position READ getPosition WRITE setPosition NOTIFY pointChanged)
+  /// Coordinate frame ID.
   Q_PROPERTY(QString frameId READ getFrameId WRITE setFrameId NOTIFY pointChanged)
+  /// Message header timestamp.
   Q_PROPERTY(QDateTime timestamp READ getTimestamp WRITE setTimestamp NOTIFY pointChanged)
 
 public slots:
@@ -59,11 +80,26 @@ protected:
 
 
 
+/**
+ * @brief Subscribes to `geometry_msgs/PointStamped` messages.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosPointStampedSubscriber {
+ *     node:  applicationNode
+ *     topic: "/target_point"
+ *     onPointChanged: targetMarker.position = position
+ * }
+ * @endcode
+ */
 class QRosPointStampedSubscriber : public QRosSubscriber{
   Q_OBJECT
 public:
+  /// Position from the last received message (x, y, z in metres).
   Q_PROPERTY(QVector3D position READ getPosition NOTIFY pointChanged)
+  /// Frame ID from the last received message header.
   Q_PROPERTY(QString frameId READ getFrameId NOTIFY pointChanged)
+  /// Timestamp from the last received message header.
   Q_PROPERTY(QDateTime timestamp READ getTimestamp NOTIFY pointChanged)
 
 public slots:
