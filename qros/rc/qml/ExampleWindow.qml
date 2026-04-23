@@ -25,7 +25,7 @@ ApplicationWindow {
     QRosStringSubscriber{
         id: stringSub
         node: applicationNode
-        Component.onCompleted: topic="/topic"
+        topic: "/topic"
     }
 
     QRosStringPublisher{ id: stringPub; node: applicationNode }
@@ -33,7 +33,7 @@ ApplicationWindow {
     QRosStringPublisher{
         id: syncStringPub
         node: applicationNode
-        Component.onCompleted: topic="/input_topic1"
+        topic: "/input_topic1"
     }
 
     QRosStringSubscriber{

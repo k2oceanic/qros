@@ -55,7 +55,7 @@ signals:
     void nodeChanged();
 
 private:
-    QRosNode* node;
+    QRosNode* node = nullptr;
 };
 
 QROS_NS_FOOT
