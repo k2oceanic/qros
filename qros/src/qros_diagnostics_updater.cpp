@@ -30,9 +30,10 @@ void QRosDiagnosticTask::componentComplete() {
 
 diagnostic_msgs::msg::DiagnosticStatus QRosDiagnosticTask::toStatus() const {
     diagnostic_msgs::msg::DiagnosticStatus status;
-    status.name    = name_.toStdString();
-    status.level   = static_cast<int8_t>(level_);
-    status.message = message_.toStdString();
+    status.hardware_id = hardwareId_.toStdString();
+    status.name        = name_.toStdString();
+    status.level       = static_cast<int8_t>(level_);
+    status.message     = message_.toStdString();
 
     for (auto it = values_.cbegin(); it != values_.cend(); ++it) {
         diagnostic_msgs::msg::KeyValue kv;
@@ -56,7 +57,6 @@ QRosDiagnosticsUpdater::QRosDiagnosticsUpdater(QObject* parent)
 void QRosDiagnosticsUpdater::setup(rclcpp::Node::SharedPtr node) {
     pub_ = node->create_publisher<diagnostic_msgs::msg::DiagnosticArray>(
         "/diagnostics", rclcpp::QoS(10));
-    hardwareId_ = QString::fromStdString(node->get_fully_qualified_name());
     timer_.start(static_cast<int>(period_ * 1000.0));
 }
 
@@ -83,11 +83,8 @@ void QRosDiagnosticsUpdater::publish() {
     diagnostic_msgs::msg::DiagnosticArray msg;
     msg.header.stamp = rclcpp::Clock().now();
 
-    for (auto* task : tasks_) {
-        auto status = task->toStatus();
-        status.hardware_id = hardwareId_.toStdString();
-        msg.status.push_back(std::move(status));
-    }
+    for (auto* task : tasks_)
+        msg.status.push_back(task->toStatus());
 
     pub_->publish(msg);
 }

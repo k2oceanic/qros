@@ -40,10 +40,11 @@ class QRosDiagnosticsUpdater;
  * @code{.qml}
  * // Inside BatteryDisplay.qml
  * QRosDiagnosticTask {
- *     name:    "Battery Voltage"
- *     level:   volts < 20 ? QRosDiagnosticTask.ERROR : QRosDiagnosticTask.OK
- *     message: "%.1f V".arg(volts)
- *     values:  ({ "voltage_v": volts, "raw_adc": rawCounts })
+ *     hardwareId: "battery_pack_1"
+ *     name:       "Battery Voltage"
+ *     level:      volts < 20 ? QRosDiagnosticTask.ERROR : QRosDiagnosticTask.OK
+ *     message:    "%.1f V".arg(volts)
+ *     values:     ({ "voltage_v": volts, "raw_adc": rawCounts })
  * }
  * @endcode
  */
@@ -51,14 +52,16 @@ class QRosDiagnosticTask : public QObject, public QQmlParserStatus {
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
 
+    /// Hardware being monitored (e.g. serial number, device name). Stamped into the DiagnosticStatus.
+    Q_PROPERTY(QString     hardwareId READ hardwareId WRITE setHardwareId NOTIFY hardwareIdChanged)
     /// Human-readable task name (appears as the status name in the DiagnosticArray).
-    Q_PROPERTY(QString     name    READ name    WRITE setName    NOTIFY nameChanged)
+    Q_PROPERTY(QString     name       READ name       WRITE setName       NOTIFY nameChanged)
     /// Severity level; use the Level enum constants (OK, WARN, ERROR, STALE).
-    Q_PROPERTY(int         level   READ level   WRITE setLevel   NOTIFY levelChanged)
+    Q_PROPERTY(int         level      READ level      WRITE setLevel      NOTIFY levelChanged)
     /// Short description of the current state (e.g. "12.4 V", "sensor timeout").
-    Q_PROPERTY(QString     message READ message WRITE setMessage NOTIFY messageChanged)
+    Q_PROPERTY(QString     message    READ message    WRITE setMessage    NOTIFY messageChanged)
     /// Optional key/value pairs published as diagnostic KeyValue entries.
-    Q_PROPERTY(QVariantMap values  READ values  WRITE setValues  NOTIFY valuesChanged)
+    Q_PROPERTY(QVariantMap values     READ values     WRITE setValues     NOTIFY valuesChanged)
 
 public:
     /// Diagnostic severity levels, matching diagnostic_msgs/DiagnosticStatus constants.
@@ -73,29 +76,33 @@ public:
     /// Called by the QML engine after all properties are bound; self-registers with diagnosticsUpdater.
     void componentComplete() override;
 
-    QString     name()    const { return name_; }
-    int         level()   const { return level_; }
-    QString     message() const { return message_; }
-    QVariantMap values()  const { return values_; }
+    QString     hardwareId() const { return hardwareId_; }
+    QString     name()       const { return name_; }
+    int         level()      const { return level_; }
+    QString     message()    const { return message_; }
+    QVariantMap values()     const { return values_; }
 
-    void setName(const QString& v)    { if (name_    != v) { name_    = v; emit nameChanged();    } }
-    void setLevel(int v)              { if (level_   != v) { level_   = v; emit levelChanged();   } }
-    void setMessage(const QString& v) { if (message_ != v) { message_ = v; emit messageChanged(); } }
+    void setHardwareId(const QString& v) { if (hardwareId_ != v) { hardwareId_ = v; emit hardwareIdChanged(); } }
+    void setName(const QString& v)       { if (name_    != v) { name_    = v; emit nameChanged();    } }
+    void setLevel(int v)                 { if (level_   != v) { level_   = v; emit levelChanged();   } }
+    void setMessage(const QString& v)    { if (message_ != v) { message_ = v; emit messageChanged(); } }
     void setValues(const QVariantMap& v) { values_ = v; emit valuesChanged(); }
 
     /// Converts this task's current state to a ROS DiagnosticStatus message.
     diagnostic_msgs::msg::DiagnosticStatus toStatus() const;
 
 signals:
+    void hardwareIdChanged();
     void nameChanged();
     void levelChanged();
     void messageChanged();
     void valuesChanged();
 
 private:
-    QString     name_    = "Unnamed Task";
-    int         level_   = OK;
-    QString     message_ = "";
+    QString     hardwareId_ = "";
+    QString     name_       = "Unnamed Task";
+    int         level_      = OK;
+    QString     message_    = "";
     QVariantMap values_;
     QPointer<QRosDiagnosticsUpdater> updater_;
 };
@@ -118,10 +125,8 @@ private:
 class QRosDiagnosticsUpdater : public QObject {
     Q_OBJECT
 
-    /// Hardware ID stamped into every DiagnosticStatus (defaults to the node's fully-qualified name).
-    Q_PROPERTY(QString hardwareId READ hardwareId WRITE setHardwareId NOTIFY hardwareIdChanged)
     /// Publish period in seconds (default 1.0 Hz).
-    Q_PROPERTY(double  period     READ period     WRITE setPeriod     NOTIFY periodChanged)
+    Q_PROPERTY(double  period READ period WRITE setPeriod NOTIFY periodChanged)
 
 public:
     explicit QRosDiagnosticsUpdater(QObject* parent = nullptr);
@@ -139,10 +144,7 @@ public:
     /// Removes @p task from the publish set (called automatically from ~QRosDiagnosticTask).
     void unregisterTask(QRosDiagnosticTask* task);
 
-    QString hardwareId() const { return hardwareId_; }
-    double  period()     const { return period_; }
-
-    void setHardwareId(const QString& v) { if (hardwareId_ != v) { hardwareId_ = v; emit hardwareIdChanged(); } }
+    double period() const { return period_; }
 
     /**
      * @brief Sets the publish period and restarts the internal timer.
@@ -151,7 +153,6 @@ public:
     void setPeriod(double v);
 
 signals:
-    void hardwareIdChanged();
     void periodChanged();
 
 private slots:
@@ -161,8 +162,7 @@ private slots:
 private:
     rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr pub_;
     QTimer  timer_;
-    QString hardwareId_ = "roship_ui";
-    double  period_     = 1.0;
+    double  period_ = 1.0;
     QVector<QRosDiagnosticTask*> tasks_;
 };
 
