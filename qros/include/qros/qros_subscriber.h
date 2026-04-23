@@ -172,14 +172,15 @@ public slots:
      * @param topic  ROS topic name; logs a warning if called before node is set.
      */
     void setTopic(QString topic) {
-        if (getRosNode() != nullptr) {
-            interfacePtr()->setNode(getNode());
-            interfacePtr()->setCallback([this]() { handleMsg(); });
-            interfacePtr()->subscribe(topic, queue_size_, latched_);
-            emit topicChanged();
-        } else {
+        topic_ = topic;
+        if (getRosNode() == nullptr) {
             qWarning() << "Subscriber topic changed before node was set! " << topic;
+            return;
         }
+        interfacePtr()->setNode(getNode());
+        interfacePtr()->setCallback([this]() { handleMsg(); });
+        interfacePtr()->subscribe(topic_, queue_size_, latched_);
+        emit topicChanged();
     }
 
     /// Returns the current topic name from the underlying rclcpp subscription.
@@ -283,6 +284,9 @@ protected:
     QTimer* stale_check_timer_ = new QTimer(this);
 
     QRosSubscriber() {
+        connect(this, &QRosObject::nodeChanged, this, [this]() {
+            if (!topic_.isEmpty()) setTopic(topic_);
+        });
         connect(stale_check_timer_, &QTimer::timeout, this, &QRosSubscriber::checkStaleState);
         last_msg_timestamp_.start();
     }

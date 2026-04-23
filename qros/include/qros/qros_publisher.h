@@ -135,9 +135,10 @@ public slots:
      * @param topic  ROS topic name; empty string is silently ignored.
      */
     void setTopic(QString topic) {
-        if (topic == "") return;
+        if (topic.isEmpty()) return;
+        topic_ = topic;
+        if (getNode() == nullptr) return;
         try {
-            topic_ = topic;
             interfacePtr()->setNode(getNode());
             interfacePtr()->createRosPub(topic_, queue_size_, latched_);
             emit topicChanged();
@@ -182,6 +183,12 @@ signals:
     void latchedChanged();   ///< Emitted when latched changes.
 
 protected:
+    QRosPublisher() {
+        connect(this, &QRosObject::nodeChanged, this, [this]() {
+            if (!topic_.isEmpty()) setTopic(topic_);
+        });
+    }
+
     /**
      * @brief Returns a pointer to the concrete typed publisher interface.
      *

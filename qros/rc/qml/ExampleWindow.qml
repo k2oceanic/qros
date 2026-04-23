@@ -1,194 +1,137 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Window 2.15
-import QtQuick.Controls.Material 2.15
+import QtQuick.Layouts 1.15
 import "Components"
-import "DataDisplays"
 import QRos 1.0
 
 ApplicationWindow {
-    id: ioWindow
     visible: true
-    width: 1920
-    height: 1080
+    width: 1000
+    height: 800
+    title: "qros Example"
 
-    Component.onCompleted: {
-        applicationNode.declareParameter("cmd.ip", "0.0.0.0")
-        applicationNode.declareParameter("cmd.port", 0)
-        applicationNode.declareParameter("vector", [1, 2, 3, 4, 5])
-        for (var key in applicationNode.parameters) {
-           console.log("Key:", key, "Value:", applicationNode.parameters[key])
-        }
-    }
+    // Topics assigned directly in the object literal — no Component.onCompleted needed
+    QRosStringPublisher  { id: strPub;   node: applicationNode; topic: "/qml/echo" }
+    QRosStringSubscriber { id: strSub;   node: applicationNode; topic: "/qml/echo";    staleTimeout: 3.0 }
 
-    // --- existing ROS demo bits ---
-    QRosStringSubscriber{
-        id: stringSub
+    QRosDoublePublisher  { id: dblPub;   node: applicationNode; topic: "/qml/value" }
+    QRosDoubleSubscriber { id: dblSub;   node: applicationNode; topic: "/qml/value";   staleTimeout: 2.0 }
+
+    QRosBoolPublisher    { id: boolPub;  node: applicationNode; topic: "/qml/flag" }
+    QRosBoolSubscriber   { id: boolSub;  node: applicationNode; topic: "/qml/flag";    staleTimeout: 5.0 }
+
+    // latched: true — late subscribers receive the last published value on connect
+    QRosStringPublisher  { id: latchPub; node: applicationNode; topic: "/qml/latched"; latched: true }
+    QRosStringSubscriber { id: latchSub; node: applicationNode; topic: "/qml/latched"; latched: true }
+
+    QRosTriggerServiceClient {
+        id: trigClient
         node: applicationNode
-        topic: "/topic"
+        Component.onCompleted: serviceName = "/reset"
     }
 
-    QRosStringPublisher{ id: stringPub; node: applicationNode }
+    ScrollView {
+        anchors.fill: parent
+        clip: true
 
-    QRosStringPublisher{
-        id: syncStringPub
-        node: applicationNode
-        topic: "/input_topic1"
-    }
-
-    QRosStringSubscriber{
-        id: syncStringSub
-        node: applicationNode
-        latched: true
-        Component.onCompleted: topic="/latched_topic1"
-    }
-
-    Column{
-        spacing: 12
-
-        Label{
-            id: myLabel
-            text: stringSub.data
-            onTextChanged: {
-                stringPub.data = text
-                stringPub.publish(text)
-            }
-        }
-
-        TextField{
-            id: textField
-            text: "/from_qml"
-            onTextChanged: stringPub.setTopic(textField.text)
-        }
-
-        Label{
-            id: paramlabel
-            text: applicationNode.parameters["cmd.ip"]
-        }
-
-        Row{
-            spacing:  10
-            TextField{ id: nodeName;  text: "/parameter_listener_node" }
-            TextField{ id: paramName; text: "my_parameter" }
-            TextField{ id: paramValue; text: "hello" }
-            Button{
-                id: sendParam
-                text: "send"
-                onClicked: applicationNode.setExternalParameterAsync(nodeName.text, paramName.text, paramValue.text)
-            }
-            Button{
-                id: getParam
-                text: "get"
-                onClicked: applicationNode.getExternalParametersAsync(nodeName.text,[paramName.text, paramName2.text])
-            }
-            Label { id: resultLabel; text: "Parameter result will appear here." }
-
-            Component.onCompleted: applicationNode.parametersGetResult.connect(handleParametersGetResult)
-            function handleParametersGetResult(success, nodeName, params, error) {
-                if (success) {
-                    var resultText = "Parameters from " + nodeName + ":\n"
-                    for (var key in params) resultText += key + ": " + params[key] + "\n"
-                    resultLabel.text = resultText
-                } else {
-                    console.log("Failed to get parameters from " + nodeName + ": " + error)
-                    resultLabel.text = "Failed to get parameters: " + error
-                }
-            }
-        }
-
-        Row {
+        Column {
+            x: 12; y: 12
+            width: parent.width - 24
             spacing: 10
-            TextField{ id: paramName2; text: "my_parameter2" }
-            Button {
-                text: "List All Parameters"
-                onClicked: applicationNode.listExternalParametersAsync(nodeName.text, 1000)
-            }
-            Label { id: listLabel; text: "Parameter list will appear here."; wrapMode: Text.WordWrap }
-            Connections {
-                target: applicationNode
-                onParametersListResult: {
-                    listLabel.text = success
-                        ? "Parameters available in " + nodeName.text + ":\n" + param_names.join("\n")
-                        : "Failed to list parameters from " + nodeName.text + ": " + error
+
+            GroupBox {
+                width: parent.width
+                title: "String — /qml/echo"
+                Column { spacing: 6
+                    Row { spacing: 8
+                        TextField { id: strInput; placeholderText: "message…"; width: 300 }
+                        Button { text: "Publish"; onClicked: { strPub.data = strInput.text; strPub.publish() } }
+                    }
+                    Label { text: "received: " + (strSub.data || "—") + (strSub.isStale ? "  [stale]" : "") }
                 }
             }
-        }
 
-        // Joint State Publisher
-        QRosJointStatePublisher {
-            id: jointStatePublisher
-            node: applicationNode
-            Component.onCompleted: topic = "/pt25_roll_cmd"
-            jointNames: ["joint1"]
-            positions: [0.0]
-            velocities: [0.0]
-            efforts: [0.0]
-        }
-
-        // Joint State Subscriber
-        QRosJointStateSubscriber {
-            id: jointStateSubscriber
-            node: applicationNode
-            Component.onCompleted: topic = "/pt25_roll"
-            onJointStateChanged: {
-                console.log("Joint state updated")
-                console.log("Joint names:", jointStateSubscriber.jointNames)
-                console.log("Positions:", jointStateSubscriber.positions)
-                console.log("Velocities:", jointStateSubscriber.velocities)
-                console.log("Efforts:", jointStateSubscriber.efforts)
+            GroupBox {
+                width: parent.width
+                title: "Float64 — /qml/value  (staleTimeout: 2 s)"
+                Column { spacing: 6
+                    Row { spacing: 8
+                        Slider { id: dblSlider; from: -100; to: 100; width: 300
+                            onValueChanged: { dblPub.data = value; dblPub.publish() }
+                        }
+                        Label { text: dblSlider.value.toFixed(2); anchors.verticalCenter: parent.verticalCenter }
+                    }
+                    Label { text: "received: " + dblSub.data.toFixed(3) + (dblSub.isStale ? "  [stale]" : "") }
+                }
             }
-        }
 
-        // UI Elements to display joint states
-        Label { text: "Joint Names: " + jointStateSubscriber.jointNames.join(", ") }
-        Label { text: "Positions: " + jointStateSubscriber.positions.join(", ") }
-        Label { text: "Velocities: " + jointStateSubscriber.velocities.join(", ") }
-        Label { text: "Efforts: " + jointStateSubscriber.efforts.join(", ") }
-
-        Row {
-            TextField {
-                id: positionField1
-                placeholderText: "Position"
-                onAccepted: jointStatePublisher.positions[0] = parseFloat(positionField1.text)
+            GroupBox {
+                width: parent.width
+                title: "Bool — /qml/flag  (staleTimeout: 5 s)"
+                Row { spacing: 12
+                    Switch { id: boolSwitch; text: "publish"
+                        onCheckedChanged: { boolPub.data = checked; boolPub.publish() }
+                    }
+                    Label { text: "received: " + boolSub.data + (boolSub.isStale ? "  [stale]" : "");
+                            anchors.verticalCenter: parent.verticalCenter }
+                }
             }
-        }
-        Button {
-            text: "Update Joint States"
-            onClicked: {
-                jointStatePublisher.positions = [parseFloat(positionField1.text)]
-                jointStatePublisher.publish()
+
+            GroupBox {
+                width: parent.width
+                title: "Latched — /qml/latched  (subscriber receives last value on connect)"
+                Column { spacing: 6
+                    Row { spacing: 8
+                        TextField { id: latchInput; placeholderText: "value to hold…"; width: 300 }
+                        Button { text: "Publish Latched"; onClicked: { latchPub.data = latchInput.text; latchPub.publish() } }
+                    }
+                    Label { text: "held value: " + (latchSub.data || "—") }
+                }
             }
-        }
 
-        TextField{
-            id: syncLabel
-            property string textState: syncStringSub.data
-            onEditingFinished: {
-                syncStringPub.data = text
-                syncStringPub.publish()
+            GroupBox {
+                width: parent.width
+                title: "Trigger Service Client"
+                Column { spacing: 6
+                    Row { spacing: 8
+                        TextField { id: svcField; text: trigClient.serviceName; width: 300
+                            onEditingFinished: trigClient.serviceName = text }
+                        Button { text: "Call"; onClicked: trigClient.callService() }
+                    }
+                    Label { text: "response: " + (trigClient.respMessage || "—") }
+                }
             }
-            onTextStateChanged: syncLabel.text = textState
-        }
 
-        Button { onClicked: trigService.callService() }
-        Label { text: trigService.respMessage }
+            GroupBox {
+                width: parent.width
+                title: "Parameters"
+                Column { spacing: 6
+                    Component.onCompleted: {
+                        applicationNode.declareParameter("demo.value", 42.0)
+                        applicationNode.declareParameter("demo.label", "hello qros")
+                    }
+                    Label { text: "demo.value: " + (applicationNode.parameters["demo.value"] ?? "—") +
+                                  "   demo.label: " + (applicationNode.parameters["demo.label"] ?? "—") }
+                    Row { spacing: 8
+                        TextField { id: extNode;  text: "/listener_node"; width: 160 }
+                        TextField { id: extParam; text: "my_param";       width: 120 }
+                        TextField { id: extValue; text: "hello";           width: 120 }
+                        Button { text: "Set"; onClicked: applicationNode.setExternalParameterAsync(extNode.text, extParam.text, extValue.text) }
+                        Button { text: "Get"; onClicked: applicationNode.getExternalParametersAsync(extNode.text, [extParam.text]) }
+                    }
+                    Connections {
+                        target: applicationNode
+                        function onParametersGetResult(success, nodeName, params, error) {
+                            paramResult.text = success
+                                ? Object.entries(params).map(function(e) { return e[0] + ": " + e[1] }).join(", ")
+                                : "error: " + error
+                        }
+                    }
+                    Label { id: paramResult; text: "—" }
+                }
+            }
 
-        QRosTriggerServiceClient{
-            id: trigService
-            node: applicationNode
-            Component.onCompleted: serviceName= "/odysseus4k/nav/reset_map_frame"
+            TFDemoPanel { width: parent.width; node: applicationNode }
         }
-
-        // =======================
-        // TF DEMO PANEL (new component)
-        // =======================
-        TFDemoPanel {
-            id: tfPanel
-            node: applicationNode
-            // Optionally set defaults:
-            // targetFrame: "map"
-            // sourceFrame: "base_link"
-        }
-        // ===== end TF demo =====
     }
 }
