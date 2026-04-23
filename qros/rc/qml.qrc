@@ -6,5 +6,11 @@
         <file>qml/DataDisplays/HydraulicPressureDisplay.qml</file>
         <file>qml/ExampleWindow.qml</file>
         <file>qml/Components/TFDemoPanel.qml</file>
+        <file>qml/Components/StringExample.qml</file>
+        <file>qml/Components/Float64Example.qml</file>
+        <file>qml/Components/BoolExample.qml</file>
+        <file>qml/Components/LatchedExample.qml</file>
+        <file>qml/Components/ServiceExample.qml</file>
+        <file>qml/Components/ParametersExample.qml</file>
     </qresource>
 </RCC>
