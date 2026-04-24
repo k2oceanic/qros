@@ -85,7 +85,7 @@ public:
             qos.best_effort();
             qos.durability_volatile();
         }
-        if (topic.isEmpty()) { ros_sub_.reset(); return; }
+        if (topic.isEmpty() || topic.endsWith("/")) { ros_sub_.reset(); return; }
         try {
             ros_sub_ = ros_node_ptr_->template create_subscription<msg_T>(
                 topic.toStdString(), qos,
@@ -169,12 +169,12 @@ public:
 public slots:
     /**
      * @brief Sets the topic and creates the ROS subscription.
-     * @param topic  ROS topic name; logs a warning if called before node is set.
+     * @param topic  ROS topic name.
      */
     void setTopic(QString topic) {
         topic_ = topic;
         if (getRosNode() == nullptr) {
-            qWarning() << "Subscriber topic changed before node was set! " << topic;
+            qDebug() << "Subscriber topic set before node ready, will subscribe on node init:" << topic;
             return;
         }
         interfacePtr()->setNode(getNode());
