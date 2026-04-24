@@ -1,28 +1,29 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Window 2.15
-import QtQuick.Controls.Material 2.15
 import "Components"
-import "DataDisplays"
-import QRos 1.0
 
 ApplicationWindow {
-    id: ioWindow
     visible: true
-    width: 1920
-    height: 1080
+    width: 1000
+    height: 800
+    title: "qros Example"
 
-    QRosStringSubscriber{
-        id: stringSub
-        node: applicationNode
-        Component.onCompleted:{
-            subscribe("/topic")
+    ScrollView {
+        anchors.fill: parent
+        clip: true
+
+        Column {
+            x: 12; y: 12
+            width: parent.width - 24
+            spacing: 10
+
+            StringExample    { width: parent.width; node: applicationNode }
+            Float64Example   { width: parent.width; node: applicationNode }
+            BoolExample      { width: parent.width; node: applicationNode }
+            LatchedExample   { width: parent.width; node: applicationNode }
+            ServiceExample   { width: parent.width; node: applicationNode }
+            ParametersExample { width: parent.width; node: applicationNode }
+            TFDemoPanel      { width: parent.width; node: applicationNode }
         }
-    }
-
-    Label{
-        id: myLabel
-        anchors.centerIn: parent
-        text: stringSub.data
     }
 }

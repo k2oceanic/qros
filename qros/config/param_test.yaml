@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    input_topics:
+      - "/input_topic1"
+      - "/input_topic2"
+      - "/input_topic3"
+    output_topics:
+      - "/latched_topic1"
+      - "/latched_topic2"
+      - "/latched_topic3"
+    message_types:
+      - "std_msgs/msg/String"
+      - "std_msgs/msg/Int32"
+      - "geometry_msgs/msg/Point"

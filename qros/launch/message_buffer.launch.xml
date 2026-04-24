@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+
+  <node pkg="qros" exec="message_buffer" name="message_buffer" namespace="$(var vessel_ns)/control" output="screen">
+    <param from="$(find-pkg-share herc_ui)/config/param_test.yaml"/>
+  </node>
+
+</launch>
+
