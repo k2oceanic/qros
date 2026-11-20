@@ -1,12 +1,13 @@
-#include "qros.h"
+#include "qros/qros.h"
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
-#include <QQuickStyle>
+//#include <QQuickStyle>
 
 int main(int argc, char *argv[])
 {
+  Q_INIT_RESOURCE(qml);
   rclcpp::init(argc, argv);
 
   auto ros_node = std::make_shared<rclcpp::Node>("qml_example");

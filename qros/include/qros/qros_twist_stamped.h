@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file qros_twist_stamped.h
+ * @brief Publisher and subscriber for geometry_msgs/msg/TwistStamped.
+ */
+
 #include "qros_subscriber.h"
 #include "qros_publisher.h"
 #include <geometry_msgs/msg/twist_stamped.hpp>
@@ -9,12 +14,30 @@
 
 QROS_NS_HEAD
 
-    class QRosTwistStampedPublisher : public QRosPublisher{
+/**
+ * @brief Publishes `geometry_msgs/TwistStamped` messages.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosTwistStampedPublisher {
+ *     node:    applicationNode
+ *     topic:   "/cmd_vel"
+ *     linear:  Qt.vector3d(forwardSpeed, 0, 0)
+ *     angular: Qt.vector3d(0, 0, yawRate)
+ *     frameId: "base_link"
+ * }
+ * @endcode
+ */
+class QRosTwistStampedPublisher : public QRosPublisher{
   Q_OBJECT
 public:
+  /// Linear velocity (x, y, z) in m/s.
   Q_PROPERTY(QVector3D linear READ getLinear WRITE setLinear NOTIFY twistChanged)
+  /// Angular velocity (roll, pitch, yaw) in rad/s.
   Q_PROPERTY(QVector3D angular READ getAngular WRITE setAngular NOTIFY twistChanged)
+  /// Coordinate frame ID.
   Q_PROPERTY(QString frameId READ getFrameId WRITE setFrameId NOTIFY twistChanged)
+  /// Message header timestamp.
   Q_PROPERTY(QDateTime timestamp READ getTimestamp WRITE setTimestamp NOTIFY twistChanged)
 
 public slots:
@@ -71,12 +94,28 @@ protected:
 
 
 
+/**
+ * @brief Subscribes to `geometry_msgs/TwistStamped` messages.
+ *
+ * ### QML usage
+ * @code{.qml}
+ * QRosTwistStampedSubscriber {
+ *     node:  applicationNode
+ *     topic: "/odom/twist"
+ *     onTwistChanged: speedDisplay.value = linear.x
+ * }
+ * @endcode
+ */
 class QRosTwistStampedSubscriber : public QRosSubscriber{
   Q_OBJECT
 public:
+  /// Linear velocity from the last received message.
   Q_PROPERTY(QVector3D linear READ getLinear NOTIFY twistChanged)
+  /// Angular velocity from the last received message.
   Q_PROPERTY(QVector3D angular READ getAngular NOTIFY twistChanged)
+  /// Frame ID from the last received message header.
   Q_PROPERTY(QString frameId READ getFrameId NOTIFY twistChanged)
+  /// Timestamp from the last received message header.
   Q_PROPERTY(QDateTime timestamp READ getTimestamp NOTIFY twistChanged)
 
 public slots:

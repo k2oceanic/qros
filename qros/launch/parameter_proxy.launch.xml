@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+
+  <node pkg="qros" exec="parameter_proxy" name="parameter_proxy" output="screen">
+    <param from="$(find-pkg-share qros)/config/parameter_proxy.yaml"/>
+  </node>
+
+</launch>

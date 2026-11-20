@@ -1,4 +1,4 @@
-#include "qros_node.h"
+#include "qros/qros_node.h"
 
 QROS_NS_HEAD
 
@@ -6,6 +6,19 @@ QRosNode::QRosNode(QObject *parent)
     : QObject{parent}
 {
   node_ptr_ = nullptr;
+  parameter_event_ = new QRosParameterEvent(this);
+}
+
+std::shared_ptr<rclcpp::AsyncParametersClient>
+QRosNode::getOrCreateParamClient(const std::string &node_name)
+{
+  std::lock_guard<std::mutex> lock(param_clients_mutex_);
+  if (!node_ptr_) return nullptr;
+  auto it = param_clients_.find(node_name);
+  if (it != param_clients_.end()) return it->second;
+  auto client = std::make_shared<rclcpp::AsyncParametersClient>(node_ptr_, node_name);
+  param_clients_.emplace(node_name, client);
+  return client;
 }
 
 
@@ -22,6 +35,38 @@ rclcpp::Node::SharedPtr QRosNode::getNodePtr() const
 void QRosNode::setNodePtr(const rclcpp::Node::SharedPtr &newNode_ptr)
 {
   node_ptr_ = newNode_ptr;
+
+  {
+    std::lock_guard<std::mutex> lock(param_clients_mutex_);
+    param_clients_.clear();
+  }
+
+  param_event_sub_ = node_ptr_->create_subscription<rcl_interfaces::msg::ParameterEvent>(
+    "/parameter_events", 10,
+    [this](const rcl_interfaces::msg::ParameterEvent::SharedPtr msg) {
+      QString node_name = QString::fromStdString(msg->node);
+      for (const auto &p : msg->new_parameters) {
+        rclcpp::Parameter ros_param(p.name, rclcpp::ParameterValue(p.value));
+        QVariant v = paramValueToQVariant(ros_param);
+        emit parameter_event_->newParam(node_name, QString::fromStdString(p.name), v);
+        emit parameter_event_->event(node_name, QString::fromStdString(p.name), v);
+      }
+      for (const auto &p : msg->changed_parameters) {
+        rclcpp::Parameter ros_param(p.name, rclcpp::ParameterValue(p.value));
+        emit parameter_event_->event(node_name,
+                                     QString::fromStdString(p.name),
+                                     paramValueToQVariant(ros_param));
+      }
+      for (const auto &p : msg->deleted_parameters)
+        emit parameter_event_->deleted(node_name, QString::fromStdString(p.name));
+    });
+
+  emit nodeChanged();
+}
+
+QRosParameterEvent* QRosNode::getParameterEvent() const
+{
+  return parameter_event_;
 }
 
 rclcpp::ParameterValue QRosNode::paramValueFromQVariant(const QVariant &value)
@@ -90,6 +135,15 @@ void QRosNode::spinRosSome()
   rclcpp::spin_some(node_ptr_);
 }
 
+QStringList QRosNode::getTopics()
+{
+  QStringList list;
+  if (node_ptr_)
+    for (const auto &topic : node_ptr_->get_topic_names_and_types())
+      list.append(QString::fromStdString(topic.first));
+  return list;
+}
+
 QStringList QRosNode::getTopicsOfType(QString topic_type)
 {
   QStringList topicsList;
@@ -105,10 +159,46 @@ QStringList QRosNode::getTopicsOfType(QString topic_type)
   return topicsList;
 }
 
+QStringList QRosNode::getServices()
+{
+  QStringList list;
+  if (node_ptr_)
+    for (const auto &service : node_ptr_->get_service_names_and_types())
+      list.append(QString::fromStdString(service.first));
+  return list;
+}
+
+QStringList QRosNode::getServicesOfType(QString service_type)
+{
+  QStringList servicesList;
+  if (node_ptr_) {
+    const auto services = node_ptr_->get_service_names_and_types();
+    for (const auto &service : services) {
+      QString serviceName = QString::fromStdString(service.first);
+      if (service.second[0] == service_type.toStdString()) {
+        servicesList.append(serviceName);
+      }
+    }
+  }
+  return servicesList;
+}
+
+QStringList QRosNode::getNodeNames()
+{
+  QStringList list;
+  if (node_ptr_)
+    for (const auto &name : node_ptr_->get_node_names())
+      list.append(QString::fromStdString(name));
+  return list;
+}
+
 void QRosNode::declareParameter(const QString &param_name, const QVariant &default_value)
 {
-  auto param_value =  paramValueFromQVariant(default_value);
-  node_ptr_->declare_parameter(param_name.toStdString(), param_value);
+  const std::string name = param_name.toStdString();
+  if (!node_ptr_->has_parameter(name)) {
+    auto param_value = paramValueFromQVariant(default_value);
+    node_ptr_->declare_parameter(name, param_value);
+  }
   updateParameters();
 }
 
@@ -195,7 +285,11 @@ void QRosNode::setExternalParameter(const QString &node_name,
                             const QVariant &value,
                             int wait_ms)
 {
-  auto param_client = std::make_shared<rclcpp::AsyncParametersClient>(node_ptr_, node_name.toStdString());
+  auto param_client = getOrCreateParamClient(node_name.toStdString());
+  if (!param_client) {
+    emit parameterSetResult(false, node_name, param_name);
+    return;
+  }
 
   if (param_client->wait_for_service(std::chrono::milliseconds(wait_ms))){
     auto param_value = paramValueFromQVariant(value);
@@ -206,7 +300,8 @@ void QRosNode::setExternalParameter(const QString &node_name,
     emit parameterSetResult(result,node_name,param_name);
   }else{
     emit parameterSetResult(false,node_name,param_name);
-    RCLCPP_ERROR(node_ptr_->get_logger(), "Node %s not found, can't set parameter",node_name.toStdString().c_str());
+    RCLCPP_WARN_THROTTLE(node_ptr_->get_logger(), *node_ptr_->get_clock(), 5000,
+        "Node %s not found, can't set parameter", node_name.toStdString().c_str());
   }
 
 }
@@ -225,9 +320,14 @@ void QRosNode::getExternalParameters(const QString &node_name, const QStringList
         return;
     }
 
-    auto param_client = std::make_shared<rclcpp::AsyncParametersClient>(node_ptr_, node_name.toStdString());
+    auto param_client = getOrCreateParamClient(node_name.toStdString());
+    if (!param_client) {
+        emit parametersGetResult(false, node_name, QVariantMap(), "Node pointer is null");
+        return;
+    }
     if (!param_client->wait_for_service(std::chrono::milliseconds(wait_ms))) {
-        RCLCPP_WARN(node_ptr_->get_logger(), "Service not available for node: %s", node_name);
+        RCLCPP_WARN_THROTTLE(node_ptr_->get_logger(), *node_ptr_->get_clock(), 5000,
+            "Service not available for node: %s", node_name.toStdString().c_str());
         emit parametersGetResult(false, node_name, QVariantMap(), "Service not available");
         return;
     }
@@ -259,9 +359,14 @@ void QRosNode::listExternalParametersAsync(const QString &node_name, int wait_ms
             return;
         }
 
-        auto param_client = std::make_shared<rclcpp::AsyncParametersClient>(node_ptr_, node_name.toStdString());
+        auto param_client = getOrCreateParamClient(node_name.toStdString());
+        if (!param_client) {
+            emit parametersListResult(false, node_name, {}, "Node pointer is null");
+            return;
+        }
         if (!param_client->wait_for_service(std::chrono::milliseconds(wait_ms))) {
-            RCLCPP_WARN(node_ptr_->get_logger(), "Service not avalailable for node: %s", node_name);
+            RCLCPP_WARN_THROTTLE(node_ptr_->get_logger(), *node_ptr_->get_clock(), 5000,
+                "Service not available for node: %s", node_name.toStdString().c_str());
             emit parametersListResult(false, node_name, {}, "Service not available for node: " + node_name);
             return;
         }
@@ -278,31 +383,51 @@ void QRosNode::listExternalParametersAsync(const QString &node_name, int wait_ms
             RCLCPP_ERROR(node_ptr_->get_logger(), "Exception listing parameters: %s", e.what());
             emit parametersListResult(false, node_name, {}, QString::fromStdString(e.what()));
         }
-    }).detach();
+  }).detach();
 }
 
-QVariant QRosNode::paramValueToQVariant(const rclcpp::Parameter &param) {
-    switch (param.get_type()) {
-        case rclcpp::ParameterType::PARAMETER_BOOL:
-            return QVariant(param.as_bool());
-        case rclcpp::ParameterType::PARAMETER_INTEGER:
-            return QVariant(qlonglong(param.as_int()));
-        case rclcpp::ParameterType::PARAMETER_DOUBLE:
-            return QVariant(param.as_double());
-        case rclcpp::ParameterType::PARAMETER_STRING:
-            return QVariant(QString::fromStdString(param.as_string()));
-        case rclcpp::ParameterType::PARAMETER_BOOL_ARRAY:
-        case rclcpp::ParameterType::PARAMETER_INTEGER_ARRAY:
-        case rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY:
-        case rclcpp::ParameterType::PARAMETER_STRING_ARRAY:
-            return arrayToVariantList(param);
-        case rclcpp::ParameterType::PARAMETER_NOT_SET:
-            RCLCPP_ERROR(node_ptr_->get_logger(), "Parameter not set");
-            break;
-        default:
-            RCLCPP_ERROR(node_ptr_->get_logger(), "Unhandled parameter array type: %s ",param.get_type_name().c_str());
-            break;
-    }
+int QRosNode::countSubscribers(const QString &topic){
+  return node_ptr_->count_subscribers(topic.toStdString());
+}
+
+int QRosNode::countPublishers(const QString &topic){
+  return node_ptr_->count_publishers(topic.toStdString());
+}
+
+QString QRosNode::getName(){
+  QString::fromStdString(node_ptr_->get_name());
+}
+
+QString QRosNode::getNamespace(){
+  if (node_ptr_) return QString::fromStdString(node_ptr_->get_namespace());
+  return "";
+}
+
+QVariant QRosNode::paramValueToQVariant(const rclcpp::Parameter &param)
+{
+  switch (param.get_type()) {
+  case rclcpp::ParameterType::PARAMETER_BOOL:
+    return QVariant(param.as_bool());
+  case rclcpp::ParameterType::PARAMETER_INTEGER:
+    return QVariant(qlonglong(param.as_int()));
+  case rclcpp::ParameterType::PARAMETER_DOUBLE:
+    return QVariant(param.as_double());
+  case rclcpp::ParameterType::PARAMETER_STRING:
+    return QVariant(QString::fromStdString(param.as_string()));
+  case rclcpp::ParameterType::PARAMETER_BOOL_ARRAY:
+  case rclcpp::ParameterType::PARAMETER_INTEGER_ARRAY:
+  case rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY:
+  case rclcpp::ParameterType::PARAMETER_STRING_ARRAY:
+    return arrayToVariantList(param);
+  case rclcpp::ParameterType::PARAMETER_NOT_SET:
+    RCLCPP_ERROR(node_ptr_->get_logger(), "Parameter not set");
+    break;
+  default:
+    RCLCPP_ERROR(node_ptr_->get_logger(),
+                 "Unhandled parameter array type: %s ",
+                 param.get_type_name().c_str());
+    break;
+  }
 }
 
 QVariant QRosNode::arrayToVariantList(const rclcpp::Parameter &param) {

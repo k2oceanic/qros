@@ -1,0 +1,8 @@
+/**:
+  ros__parameters:
+    target_node: "/r2sonic"
+    state_publish_rate: 5.0     # Hz
+    parameter_filter:
+      - "topics/*"
+      - "sim_commands.sonar_power"
+      - "sonar_ip"

@@ -2,6 +2,17 @@
 #ifndef QROS_H
 #define QROS_H
 
+/**
+ * @file qros.h
+ * @brief Umbrella include for the entire qros library.
+ *
+ * Include this file to bring in all qros types and the REGISTER_QML_TYPE
+ * macro used by qros.cpp to register every type with the QML engine.
+ *
+ * Applications should also call qros::registerQmlTypes() once before the
+ * QML engine loads its root component.
+ */
+
 #include "qros_node.h"
 #include "qqml.h"
 #include "qros_publisher.h"
@@ -25,13 +36,25 @@
 #include "qros_settings.h"
 #include "qros_float32.h"
 #include "qros_raw_analog_array.h"
+#include "qros_raw_digital.h"
+#include "qros_channel_trigger_client.h"
 #include "qros_wrench_stamped.h"
 #include "qros_thrust_stamped.h"
+#include "qros_thrust_array.h"
 #include "qros_range.h"
 #include "qros_imu.h"
 #include "qros_point_stamped.h"
 #include "qros_service_client.h"
 #include "qros_trigger_service.h"
+#include "qros_navsat_fix.h"
+#include "qros_geo_point.h"
+
+#include "qros_tf_buffer.h"             // QRosTfBuffer
+#include "qros_transform_stamped.h"     // QRosTransformStamped
+#include "qros_qvariant.h"              // QRosQVariantPublisher / QRosQVariantSubscriber
+#include "qros_qvariant_map.h"          // QRosQVariantMapPublisher / QRosQVariantMapSubscriber
+#include "qros_diagnostics_updater.h"      // QRosDiagnosticsUpdater / QRosDiagnosticTask
+#include "qros_diagnostics_aggregator.h"  // QRosDiagnosticsAggregator (context property)
 
 #define REGISTER_QML_TYPE(TYPE) \
   qmlRegisterType<TYPE>(QML_PACKAGE, QML_PACKAGE_VERSION_MAJOR, QML_PACKAGE_VERSION_MINOR, #TYPE); \

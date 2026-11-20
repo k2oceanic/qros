@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file qros_raw_analog_array.h
+ * @brief Subscriber for io_interfaces/msg/RawAnalogArray.
+ */
+
 #include "qros_subscriber.h"
 #include "qros_publisher.h"
 #include <io_interfaces/msg/raw_analog_array.hpp>
@@ -10,85 +15,51 @@
 
 QROS_NS_HEAD
 
-//     class QRosRawAnalogPublisher : public QRosPublisher {
-//   Q_OBJECT
-// public:
-//   Q_PROPERTY(QVector<int> channelIds READ getChannelIds WRITE setChannelIds NOTIFY analogsChanged)
-//   Q_PROPERTY(QVector<float> scales READ getScales WRITE setScales NOTIFY analogsChanged)
-//   Q_PROPERTY(QVector<float> proportionalValues READ getProportionalValues WRITE setProportionalValues NOTIFY analogsChanged)
-//   Q_PROPERTY(QString frameId READ getFrameId WRITE setFrameId NOTIFY analogsChanged)
-
-// public slots:
-//   QVector<int> getChannelIds() {
-//     QVector<int> ids;
-//     for (auto &analog : publisher_.msgBuffer()) {
-//       ids.push_back(analog.channel_id);
-//     }
-//     return ids;
-//   }
-
-//   void setChannelIds(QVector<int> ids) {
-//     for (int i = 0; i < ids.size(); ++i) {
-//       publisher_.msgBuffer().analogs[i].channel_id = ids[i];
-//     }
-//     emit analogsChanged();
-//   }
-
-//   QVector<float> getScales() {
-//     QVector<float> scales;
-//     for (auto &analog : publisher_.msgBuffer().analogs) {
-//       scales.push_back(analog.scale);
-//     }
-//     return scales;
-//   }
-
-//   void setScales(QVector<float> scales) {
-//     for (int i = 0; i < scales.size(); ++i) {
-//       publisher_.msgBuffer().analogs[i].scale = scales[i];
-//     }
-//     emit analogsChanged();
-//   }
-
-//   QVector<float> getProportionalValues() {
-//     QVector<float> values;
-//     for (auto &analog : publisher_.msgBuffer().analogs) {
-//       values.push_back(analog.proportional_value);
-//     }
-//     return values;
-//   }
-
-//   void setProportionalValues(QVector<float> values) {
-//     for (int i = 0; i < values.size(); ++i) {
-//       publisher_.msgBuffer().analogs[i].proportional_value = values[i];
-//     }
-//     emit analogsChanged();
-//   }
-
-//   QString getFrameId() {
-//     return QString::fromStdString(publisher_.msgBuffer().header.frame_id);
-//   }
-
-//   void setFrameId(QString frameId) {
-//     publisher_.msgBuffer().header.frame_id = frameId.toStdString();
-//     emit analogsChanged();
-//   }
-
-// signals:
-//   void analogsChanged();
-
-// protected:
-//   QRosPublisherInterface* interfacePtr() { return &publisher_; }
-//   QRosTypedPublisher<io_interfaces::msg::RawAnalogArray> publisher_;
-// };
-
+/**
+ * @brief Subscribes to `io_interfaces/RawAnalogArray` messages.
+ *
+ * Exposes all per-channel analog data from the IO board.  In addition to
+ * the bulk array properties, the `analogChanged` signal fires once per
+ * channel per message, making it easy to route individual channels to
+ * separate QML components without iterating the arrays.
+ *
+ * ### QML usage — bulk binding
+ * @code{.qml}
+ * QRosRawAnalogSubscriber {
+ *     node:  applicationNode
+ *     topic: "/io_board/analog"
+ *     onAnalogsChanged: {
+ *         for (var i = 0; i < channelIds.length; i++)
+ *             channels[channelIds[i]].value = scaledValues[i]
+ *     }
+ * }
+ * @endcode
+ *
+ * ### QML usage — per-channel signal
+ * @code{.qml}
+ * QRosRawAnalogSubscriber {
+ *     node:  applicationNode
+ *     topic: "/io_board/analog"
+ *     onAnalogChanged: (channelId, scale, prop, scaled, type) => {
+ *         if (channelId === 3) batteryDisplay.value = scaled
+ *     }
+ * }
+ * @endcode
+ */
 class QRosRawAnalogSubscriber : public QRosSubscriber {
   Q_OBJECT
 public:
+  /// Channel IDs present in the last received message.
   Q_PROPERTY(QVector<int> channelIds READ getChannelIds NOTIFY analogsChanged)
+  /// Scale factors for each channel (engineering-unit multiplier).
   Q_PROPERTY(QVector<double> scales READ getScales NOTIFY analogsChanged)
+  /// Proportional (0–1) ADC values for each channel.
   Q_PROPERTY(QVector<double> proportionalValues READ getProportionalValues NOTIFY analogsChanged)
+  /// Scaled values (proportionalValue × scale) for each channel.
   Q_PROPERTY(QVector<double> scaledValues READ getScaledValues NOTIFY analogsChanged)
+  /// Channel type bytes for each channel.
   Q_PROPERTY(QVector<uint8_t> types READ getTypes NOTIFY analogsChanged)
+  /// Frame ID from the last received message header.
   Q_PROPERTY(QString frameId READ getFrameId NOTIFY analogsChanged)
 
 public slots:
@@ -137,7 +108,16 @@ public slots:
   }
 
 signals:
+  /// Emitted once per message after all per-channel signals.
   void analogsChanged();
+  /**
+   * @brief Emitted once per channel per received message.
+   * @param channelId        1-based hardware channel number.
+   * @param scale            Engineering-unit scale factor.
+   * @param proportionalValue Raw ADC value in the 0–1 range.
+   * @param scaledValue      proportionalValue × scale.
+   * @param type             Channel type byte.
+   */
   void analogChanged(int channelId, double scale, double proportionalValue, double scaledValue, int type);
 
 protected:
