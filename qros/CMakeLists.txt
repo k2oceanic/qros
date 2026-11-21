@@ -95,7 +95,10 @@ file(GLOB NODES CONFIGURE_DEPENDS
 ### Qt (only needed if you have .ui/.qrc)
 ###
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
+# AUTOMOC bundles every moc into one mocs_compilation.cpp that needs ~4.5GB RAM
+# to compile (each header instantiates rclcpp templates). Moc each header into
+# its own translation unit instead so the build fits on embedded targets.
+set(CMAKE_AUTOMOC OFF)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
@@ -127,6 +130,9 @@ endif()
 
 # Compile the shared code ONCE
 add_library(${PROJECT_NAME} ${SRCS} ${HDRS} ${UI} ${QRC})
+
+qt6_wrap_cpp(MOC_SRCS ${HDRS} TARGET ${PROJECT_NAME})
+target_sources(${PROJECT_NAME} PRIVATE ${MOC_SRCS})
 
 # Includes:
 # - BUILD_INTERFACE: lets targets include from your source tree while building

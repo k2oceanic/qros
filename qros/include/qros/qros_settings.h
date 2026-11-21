@@ -8,6 +8,8 @@
 #include <QObject>
 #include <QSettings>
 
+#include "qros_defs.h"
+
 QROS_NS_HEAD
 
 /**
