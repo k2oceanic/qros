@@ -8,6 +8,12 @@ QRosDiagnosticsAggregator::QRosDiagnosticsAggregator(QObject* parent)
     staleTimer_.setInterval(1000);
     connect(&staleTimer_, &QTimer::timeout,
             this, &QRosDiagnosticsAggregator::checkStaleness);
+
+    // Coalescing window: batches a burst of inbound messages into one refresh.
+    emitTimer_.setSingleShot(true);
+    emitTimer_.setInterval(100);
+    connect(&emitTimer_, &QTimer::timeout,
+            this, &QRosDiagnosticsAggregator::flush);
 }
 
 void QRosDiagnosticsAggregator::setup(rclcpp::Node::SharedPtr node)
@@ -30,6 +36,8 @@ void QRosDiagnosticsAggregator::setStaleTimeoutSeconds(double v)
 void QRosDiagnosticsAggregator::onMsg(
     const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg)
 {
+    bool dirty = false;
+
     for (const auto& s : msg->status) {
         const QString key = QString::fromStdString(s.hardware_id)
                           + ":"
@@ -50,12 +58,17 @@ void QRosDiagnosticsAggregator::onMsg(
         }
         map["values"] = values;
 
-        entries_[key] = Entry{ map, std::chrono::steady_clock::now(),
-                               static_cast<int>(s.level) };
+        auto it = entries_.find(key);
+        const bool entryChanged = (it == entries_.end())  // new entry
+                               || it->stale               // was displayed STALE, now fresh
+                               || it->data != map;         // content actually changed
+        entries_.insert(key, Entry{ map, std::chrono::steady_clock::now(), false });
+        if (entryChanged)
+            dirty = true;
     }
 
-    rebuildStatus();
-    emit statusChanged();
+    if (dirty)
+        markDirty();
 }
 
 void QRosDiagnosticsAggregator::checkStaleness()
@@ -66,24 +79,30 @@ void QRosDiagnosticsAggregator::checkStaleness()
     for (auto& entry : entries_) {
         const double age =
             std::chrono::duration<double>(now - entry.lastSeen).count();
-        const int displayed = entry.data["level"].toInt();
-        const bool isStale  = age > staleTimeout_;
-
-        if (isStale && displayed != 3) {
-            entry.data["level"] = 3;
-            changed = true;
-        } else if (!isStale && displayed == 3 && entry.liveLevel != 3) {
-            // Restore real level once fresh data arrives (shouldn't normally
-            // happen via the timer, but guards against clock weirdness)
-            entry.data["level"] = entry.liveLevel;
+        const bool isStale = age > staleTimeout_;
+        if (isStale != entry.stale) {
+            entry.stale = isStale;
             changed = true;
         }
     }
 
-    if (changed) {
-        rebuildStatus();
-        emit statusChanged();
-    }
+    if (changed)
+        markDirty();
+}
+
+void QRosDiagnosticsAggregator::markDirty()
+{
+    dirty_ = true;
+    if (!emitTimer_.isActive())
+        emitTimer_.start();
+}
+
+void QRosDiagnosticsAggregator::flush()
+{
+    if (!dirty_) return;
+    dirty_ = false;
+    rebuildStatus();
+    emit statusChanged();
 }
 
 void QRosDiagnosticsAggregator::rebuildStatus()
@@ -98,9 +117,14 @@ void QRosDiagnosticsAggregator::rebuildStatus()
         }
     };
 
+    // Stale entries display as level 3 without mutating the stored live level.
+    auto displayedLevel = [](const Entry& e) -> int {
+        return e.stale ? 3 : e.data.value("level").toInt();
+    };
+
     QList<QPair<int, QString>> order;  // (priority, key)
     for (auto it = entries_.cbegin(); it != entries_.cend(); ++it) {
-        order.append({ priority(it->data["level"].toInt()), it.key() });
+        order.append({ priority(displayedLevel(*it)), it.key() });
     }
 
     std::sort(order.begin(), order.end(),
@@ -110,8 +134,13 @@ void QRosDiagnosticsAggregator::rebuildStatus()
               });
 
     status_.clear();
-    for (const auto& [prio, key] : order)
-        status_.append(entries_[key].data);
+    for (const auto& [prio, key] : order) {
+        const Entry& e = entries_[key];
+        QVariantMap m = e.data;
+        if (e.stale)
+            m["level"] = 3;
+        status_.append(m);
+    }
 }
 
 QROS_NS_FOOT

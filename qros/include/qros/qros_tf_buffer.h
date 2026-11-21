@@ -12,9 +12,9 @@
 #include <memory>
 #include <QStringList>
 
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2/time.h>
+#include <tf2_ros/buffer.hpp>
+#include <tf2_ros/transform_listener.hpp>
+#include <tf2/time.hpp>
 
 QROS_NS_HEAD
 

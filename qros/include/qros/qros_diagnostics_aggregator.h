@@ -12,6 +12,11 @@
  * QRosDiagnosticArraySubscriber: level, name, message, hardware_id, values.
  * Entries not updated within `staleTimeoutSeconds` are promoted to level 3 (STALE).
  *
+ * `statusChanged` is dirty-checked and coalesced: inbound messages that don't
+ * actually change any entry produce no signal, and a burst of messages collapses
+ * into a single refresh, so the main-thread QML cost scales with real changes
+ * rather than raw message rate.
+ *
  * Sorted order: ERROR → WARN → STALE → OK, then alphabetically by name.
  */
 
@@ -54,21 +59,27 @@ signals:
 
 private slots:
     void checkStaleness();
+    void flush();
 
 private:
     struct Entry {
-        QVariantMap                              data;
+        QVariantMap                              data;     // live, as received
         std::chrono::steady_clock::time_point    lastSeen;
-        int                                      liveLevel = 0;
+        bool                                     stale = false;
     };
 
     void onMsg(const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg);
     void rebuildStatus();
+    // Marks the status dirty and arms the coalescing timer so a burst of
+    // inbound messages collapses into one rebuild + statusChanged emit.
+    void markDirty();
 
     rclcpp::Subscription<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr sub_;
     QMap<QString, Entry> entries_;
     QVariantList         status_;
     QTimer               staleTimer_;
+    QTimer               emitTimer_;
+    bool                 dirty_ = false;
     double               staleTimeout_ = 3.0;
 };
 

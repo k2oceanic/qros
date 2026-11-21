@@ -55,6 +55,7 @@
 #include "qros_qvariant_map.h"          // QRosQVariantMapPublisher / QRosQVariantMapSubscriber
 #include "qros_diagnostics_updater.h"      // QRosDiagnosticsUpdater / QRosDiagnosticTask
 #include "qros_diagnostics_aggregator.h"  // QRosDiagnosticsAggregator (context property)
+#include "qros_rosout_aggregator.h"      // QRosRosoutAggregator (context property)
 
 #define REGISTER_QML_TYPE(TYPE) \
   qmlRegisterType<TYPE>(QML_PACKAGE, QML_PACKAGE_VERSION_MAJOR, QML_PACKAGE_VERSION_MINOR, #TYPE); \

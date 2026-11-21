@@ -43,13 +43,14 @@ void QRosParameterClient::reconnect()
   QRosNode *n = getNode();
   if (!n) return;
 
-  // Initial fetch response
+  // Initial fetch response.  setValue() before setAvailable() so listeners
+  // that react to availableChanged see a consistent (valid) value.
   conn_params_result_ = connect(n, &QRosNode::parametersGetResult,
       this, [this](bool success, QString node_name, QVariantMap params, QString /*error*/) {
         if (node_name != watched_node_) return;
-        setAvailable(success);
         if (success && params.contains(watched_param_))
           setValue(params[watched_param_]);
+        setAvailable(success);
       });
 
   // new_parameters — node started or restarted, parameter freshly declared
@@ -59,13 +60,13 @@ void QRosParameterClient::reconnect()
         emit newParam(value);
         if (override_ && value_.isValid()) {
           // UI overrides driver — push latched value back, ignore YAML default
-          setAvailable(true);
           QRosNode *n = getNode();
           if (n) n->setExternalParameterAsync(watched_node_, watched_param_, value_);
+          setAvailable(true);
         } else {
           // Driver owns state — accept the new value
-          setAvailable(true);
           setValue(value);
+          setAvailable(true);
         }
       });
 
@@ -73,8 +74,8 @@ void QRosParameterClient::reconnect()
   conn_param_event_ = connect(n->getParameterEvent(), &QRosParameterEvent::event,
       this, [this](QString node_name, QString param_name, QVariant value) {
         if (node_name != watched_node_ || param_name != watched_param_) return;
-        setAvailable(true);
         setValue(value);
+        setAvailable(true);
       });
 
   // deleted_parameters — node shut down, mark unavailable and latch value_

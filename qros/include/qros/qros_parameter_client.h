@@ -58,6 +58,10 @@ class QRosParameterClient : public QRosObject {
   Q_PROPERTY(QString  watchedParam READ getWatchedParam WRITE setWatchedParam NOTIFY watchedParamChanged)
   /// Current value of the parameter (read-only; updated automatically).
   Q_PROPERTY(QVariant value        READ getValue                               NOTIFY valueChanged)
+  /// True when `value` is an integer QVariant.  Use this from QML to pick
+  /// parseInt vs parseFloat — JS Numbers can't preserve the int/double
+  /// distinction on their own.
+  Q_PROPERTY(bool     valueIsInteger READ getValueIsInteger                    NOTIFY valueChanged)
   /// True when the remote node and parameter are reachable and have been fetched.
   Q_PROPERTY(bool     available    READ isAvailable                            NOTIFY availableChanged)
   /**
@@ -76,6 +80,12 @@ public:
   bool     isAvailable()     const { return available_; }
   bool     isOverride()      const { return override_; }
 
+  bool getValueIsInteger() const {
+    const auto id = value_.metaType().id();
+    return id == QMetaType::Int       || id == QMetaType::LongLong
+        || id == QMetaType::UInt      || id == QMetaType::ULongLong;
+  }
+
   void setWatchedNode (const QString &node);
   void setWatchedParam(const QString &param);
   void setOverride    (bool enable);
@@ -85,6 +95,13 @@ public:
    * @param value  New value; type must match the parameter's declared type.
    */
   Q_INVOKABLE void set(const QVariant &value);
+
+  // Typed setters — preserve int/double/bool/string across the QML→QVariant
+  // boundary, which otherwise widens every JS Number to double.
+  Q_INVOKABLE void setBool   (bool             v) { set(QVariant::fromValue(v)); }
+  Q_INVOKABLE void setInt    (qlonglong        v) { set(QVariant::fromValue(v)); }
+  Q_INVOKABLE void setDouble (double           v) { set(QVariant::fromValue(v)); }
+  Q_INVOKABLE void setString (const QString &  v) { set(QVariant::fromValue(v)); }
 
 signals:
   void watchedNodeChanged();
